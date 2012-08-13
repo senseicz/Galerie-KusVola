@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalerieKusVola.Managers", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalerieKusVola.Models", "GalerieKusVola.Models\GalerieKusVola.Models.csproj", "{F2353533-98CF-46E1-A6FA-477F9B787304}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalerieKusVola.Web", "GalerieKusVola.Web\GalerieKusVola.Web.csproj", "{BAD826B0-88BF-44CA-8B68-6AE28E046362}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{F2353533-98CF-46E1-A6FA-477F9B787304}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2353533-98CF-46E1-A6FA-477F9B787304}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2353533-98CF-46E1-A6FA-477F9B787304}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAD826B0-88BF-44CA-8B68-6AE28E046362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAD826B0-88BF-44CA-8B68-6AE28E046362}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAD826B0-88BF-44CA-8B68-6AE28E046362}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAD826B0-88BF-44CA-8B68-6AE28E046362}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
