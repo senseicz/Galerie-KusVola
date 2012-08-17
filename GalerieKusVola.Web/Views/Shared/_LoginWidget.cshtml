@@ -1,0 +1,12 @@
+﻿@using GalerieKusVola.Managers
+<div style="float: right; margin-right: 100px; padding-bottom: 5px; margin-bottom: 2px solid black;">
+    @if(Request.IsAuthenticated)
+    {
+        @UserManager.GetByUserId(HttpContext.Current.User.Identity.Name).UserName  @:| <a href="/Admin">Admin</a> | <a href="/Admin/Logout">odhlásit</a>
+    }
+    else
+    {
+        <a href="/Admin/Login">Login</a> @:| <a href="/Admin/Register">Registrace</a> 
+    }
+</div>
+<div style="clear:both;"></div>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GalerieKusVola.Models;
 using GalerieKusVola.Repository.Context;
@@ -12,20 +13,44 @@ namespace GalerieKusVola.Managers
             return DbContext.Current.All<Galerie>().OrderBy(d => d.Poradi).ToList();
         }
 
+        public static Galerie GetById(string id)
+        {
+            return DbContext.Current.Single<Galerie>(g => g.Id == id);
+        }
+
         public static List<Galerie> Find(string keyword)
         {
-            List<Galerie> dragons = null;
+            List<Galerie> galerie = null;
 
             if (keyword.Length > 0)
             {
-                dragons = DbContext.Current.All<Galerie>().Where(d => d.Nazev.ToLower().Contains(keyword.ToLower())).OrderBy(d => d.Nazev).ToList();
+                galerie = DbContext.Current.All<Galerie>().Where(d => d.Nazev.ToLower().Contains(keyword.ToLower())).OrderBy(d => d.Nazev).ToList();
             }
             else
             {
-                dragons = GetAll();
+                galerie = GetAll();
             }
 
-            return dragons;
+            return galerie;
+        }
+
+        public static void CreateRootGallery(User owner)
+        {
+            var gal = new Galerie
+                {
+                    DatumVytvoreni = DateTime.Now,
+                    ParentId = null,
+                    OwnerId = owner.Id,
+                    Nazev = "Kořenová galerie",
+                    Popis = "Kořenová galerie, nelze smazat.",
+                    Poradi = 1
+                };
+            Save(gal);
+        }
+
+        public static List<Galerie> GetGalerieForUser(string userId)
+        {
+            return DbContext.Current.All<Galerie>().Where(d => d.OwnerId == userId).OrderBy(d => d.Nazev).ToList();
         }
 
         public static void Save(Galerie galerie)

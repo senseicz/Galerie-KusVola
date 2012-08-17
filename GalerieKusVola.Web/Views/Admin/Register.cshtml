@@ -1,0 +1,38 @@
+﻿@model GalerieKusVola.ViewModels.Register
+<h2>Registrace</h2>
+
+@if (!string.IsNullOrEmpty(Model.OKMessage))
+{
+    <p class="OKMessage">@Model.OKMessage</p>
+    <p><a href="/Admin/Login">Přilogovat se</a></p>
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p class="ErrorMessage">@Model.ErrorMessage</p>
+}
+
+
+@if (string.IsNullOrEmpty(Model.OKMessage))
+{
+    using (Html.BeginForm("Register"))
+    {
+        <p>
+            Email:  @Html.TextBoxFor(r => r.Email)
+        </p>
+        <p>
+            Heslo: @Html.PasswordFor(r => r.Password)
+        </p>
+        <p>
+            Heslo znovu: @Html.PasswordFor(r => r.PasswordAgain)
+        </p>
+        <p>
+            Jméno: @Html.TextBoxFor(r => r.Name)
+        </p>
+        <p>
+            <input type="submit" name="btnSubmit" id="SubmitButton" value="Odeslat" />
+        </p>    
+    }
+}
+
+

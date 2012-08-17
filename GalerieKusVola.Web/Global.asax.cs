@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Http;
 using System.Web.Mvc;
+using System.Web.Optimization;
 using System.Web.Routing;
-using GalerieKusVola.Repository.Concrete;
 using GalerieKusVola.Repository.Context;
-using GalerieKusVola.Repository.Interface;
-using StructureMap;
+using GalerieKusVola.Web.App_Start;
 
 namespace GalerieKusVola.Web
 {
@@ -16,32 +16,15 @@ namespace GalerieKusVola.Web
 
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static void RegisterGlobalFilters(GlobalFilterCollection filters)
-        {
-            filters.Add(new HandleErrorAttribute());
-        }
-
-        public static void RegisterRoutes(RouteCollection routes)
-        {
-            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
-            routes.MapRoute(
-                "Default", // Route name
-                "{controller}/{action}/{id}", // URL with parameters
-                new { controller = "Home", action = "Index", id = UrlParameter.Optional } // Parameter defaults
-            );
-
-        }
-
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
 
-            RegisterGlobalFilters(GlobalFilters.Filters);
-            RegisterRoutes(RouteTable.Routes);
-
-            // Initializes StructureMap (dependency injector) to setup our concrete database provider.
-            ObjectFactory.Initialize(x => x.For<IRepository>().Use<MongoRepository>());
+            WebApiConfig.Register(GlobalConfiguration.Configuration);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+            Bootstrapper.SetupDI();
         }
 
         protected void Application__EndRequest(object sender, EventArgs e)

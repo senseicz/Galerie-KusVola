@@ -1,0 +1,19 @@
+﻿@model List<GalerieKusVola.Models.Galerie>
+
+<h2>Adminsitrace galerií</h2>
+
+@if(Model != null && Model.Count > 0)
+{
+    <ul>
+    @foreach (var galerie in Model)
+    {
+        <li>
+            @galerie.Nazev
+            &nbsp; <a href="/Admin/GalleryEdit/@galerie.Id">editovat</a>
+        </li>
+    }
+    </ul>
+}
+
+<a href="/Admin/GalleryEdit">nová galerie</a>
+

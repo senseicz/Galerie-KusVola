@@ -1,0 +1,26 @@
+﻿@model GalerieKusVola.ViewModels.Login
+
+<h2>Login</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p class="ErrorMessage">@Html.Raw(Model.ErrorMessage)</p>
+}
+
+
+@if (string.IsNullOrEmpty(Model.OKMessage))
+{
+    using (Html.BeginForm("Login"))
+    {
+        <p>
+            Email:  @Html.TextBoxFor(r => r.Email)
+        </p>
+        <p>
+            Heslo: @Html.PasswordFor(r => r.Password)
+        </p>
+        <p>
+            <input type="submit" name="btnSubmit" id="SubmitButton" value="Odeslat" />
+        </p>    
+    }
+}
+
