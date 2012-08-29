@@ -14,5 +14,6 @@ namespace GalerieKusVola.Repository.Interface
         System.Linq.IQueryable<T> All<T>(int page, int pageSize) where T : class, new();
         void Add<T>(T item) where T : class, new();
         void Add<T>(IEnumerable<T> items) where T : class, new();
+        void Update<T, U>(T origItem, U updatedIten) where U : class, new();
     }
 }

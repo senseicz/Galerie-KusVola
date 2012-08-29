@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using GalerieKusVola.Managers;
+using GalerieKusVola.Managers.Utils;
 using GalerieKusVola.Models;
 
 namespace GalerieKusVola.Web.Controllers
@@ -27,7 +28,9 @@ namespace GalerieKusVola.Web.Controllers
             {
                 if (IsUserLoggedIn)
                 {
-                    return UserManager.GetByUserId(ControllerContext.HttpContext.User.Identity.Name);
+                    var user = UserManager.GetByUserId(ControllerContext.HttpContext.User.Identity.Name);
+                    user.UserNameSEO = SEO.ConvertTextForSEOURL(user.UserName);
+                    return user;
                 }
 
                 return null;

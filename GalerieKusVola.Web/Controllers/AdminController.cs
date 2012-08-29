@@ -107,8 +107,77 @@ namespace GalerieKusVola.Web.Controllers
         public ActionResult Index()
         {
             var galerie = GalerieManager.GetGalerieForUser(CurrentUserID);
-            return View(galerie);
+            var typyFotek = FotkaManager.GetAll();
+
+            var userDir = CurrentUser.UserNameSEO;
+
+            var photosWaiting = FotkaManager.GetWaitingPhotos(userDir);
+            var retModel = new AdminVM {Galerie = galerie, TypyFotek = typyFotek, PhotosWaiting = photosWaiting};
+
+            return View(retModel);
         }
+        #endregion
+
+        #region PhotoTypeEdit
+        public ActionResult PhotoTypeEdit(string Id)
+        {
+            PhotoTypeEdit retModel;
+            
+            if(!string.IsNullOrEmpty(Id))
+            {
+                var typFotky = FotkaManager.GetById(Id);
+                retModel = new PhotoTypeEdit { PhotoTypeId = typFotky.Id, Adresar = typFotky.Adresar, NazevTypu = typFotky.JmenoTypu, X = typFotky.X, Y = typFotky.Y };    
+            }
+            else
+            {
+                retModel = new PhotoTypeEdit();
+            }
+            
+            return View(retModel);
+        }
+
+        [HttpPost]
+        public ActionResult PhotoTypeEdit(PhotoTypeEdit ptEdit)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var typFotky = new TypFotky {JmenoTypu = ptEdit.NazevTypu, Adresar = ptEdit.Adresar, X = ptEdit.X};
+                    if(ptEdit.Y.HasValue)
+                    {
+                        typFotky.Y = ptEdit.Y.Value;
+                    }
+
+                    if(!string.IsNullOrEmpty(ptEdit.PhotoTypeId))
+                    {
+                        typFotky.Id = ptEdit.PhotoTypeId;
+                    }
+
+                    if (string.IsNullOrEmpty(ptEdit.PhotoTypeId)) //INSERT
+                    {
+                        FotkaManager.Save(typFotky);
+                        ptEdit.OKMessage = "Uložení nového typu proběhlo úspěšně.";
+                    }
+                    else //UPDATE
+                    {
+                        FotkaManager.Update(typFotky);
+                        ptEdit.OKMessage = "Update typu proběhl úspěšně.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ptEdit.ErrorMessage = "Při ukládání typu fotky došlo k chybě: " + ex.Message;
+                }
+            }
+            else
+            {
+                ptEdit.ErrorMessage = "Některá povinná položka není vyplněná.";
+            }
+
+            return View(ptEdit);
+        }
+
         #endregion
 
     }

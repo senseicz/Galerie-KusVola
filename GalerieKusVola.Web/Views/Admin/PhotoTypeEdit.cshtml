@@ -1,0 +1,39 @@
+﻿@model GalerieKusVola.ViewModels.PhotoTypeEdit
+
+<h2>Typ fotky</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p class="ErrorMessage">@Html.Raw(Model.ErrorMessage)</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.OKMessage))
+{
+    <p class="OKMessage">@Model.OKMessage</p>
+    <p><a href="/Admin">zpět na seznam</a></p>
+}
+
+
+@if (string.IsNullOrEmpty(Model.OKMessage))
+{
+    using (Html.BeginForm("PhotoTypeEdit"))
+    {
+        @Html.HiddenFor(r => r.PhotoTypeId)
+        <p>
+            Název typu:  @Html.TextBoxFor(r => r.NazevTypu)
+        </p>
+        <p>
+            Adresář: @Html.TextBoxFor(r => r.Adresar)
+        </p>
+        <p>
+            Cílová šířka fotky: @Html.TextBoxFor(r => r.X)
+        </p>
+        <p>
+            Cílová výška fotky (nepovinné): @Html.TextBoxFor(r => r.Y)
+        </p>
+    
+        <p>
+            <input type="submit" name="btnSubmit" id="SubmitButton" value="Odeslat" />
+        </p>    
+    }
+}

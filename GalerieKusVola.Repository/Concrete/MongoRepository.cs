@@ -66,6 +66,11 @@ namespace GalerieKusVola.Repository.Concrete
             }
         }
 
+        public void Update<T, U>(T origItem, U updatedIten) where U : class, new()
+        {
+            _db.GetCollection<U>().UpdateOne(origItem, updatedIten);
+        }
+
         public void Dispose()
         {
             _provider.Dispose();

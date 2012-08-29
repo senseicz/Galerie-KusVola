@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GalerieKusVola.Repository\GalerieKusVola.Repository.csproj">
-      <Project>{618BA26C-D10C-4146-AB2D-3F4466384C74}</Project>
+      <Project>{618ba26c-d10c-4146-ab2d-3f4466384c74}</Project>
       <Name>GalerieKusVola.Repository</Name>
     </ProjectReference>
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using GalerieKusVola.Repository.Context;
@@ -9,9 +10,13 @@ using Norm.Attributes;
 
 namespace GalerieKusVola.Models
 {
-    public class Galerie
+    public class DomainModel
     {
         public ObjectId Id { get; set; }
+    }
+
+    public class Galerie : DomainModel
+    {
         public ObjectId OwnerId { get; set; }
         public ObjectId ParentId { get; set; }
         public string Nazev { get; set; }
@@ -77,35 +82,59 @@ namespace GalerieKusVola.Models
         }
     }
 
-    public class Fotka
+    public class Fotka : DomainModel
     {
-        public ObjectId Id { get; set; }
-        public string Nazev { get; set; }
-        public DateTime DatumVytvoreni { get; set; }
+        public ObjectId OwnerId { get; set; }
+        
+        public string NazevSouboru { get; set; }
+
+        [MongoIgnore]
+        public string BaseFotkaPath
+        {
+            get { return string.Format(@"{0}\{1}\", ConfigurationManager.AppSettings["GalerieRootDir"], User.UserNameSEO); }
+        }
+        
+        public DateTime DatumUploadu { get; set; }
+        public DateTime DatumFotky { get; set; }
         public string Popis { get; set; }
 
         public List<TypFotky> TypyFotek { get; set; }
+
+        private User _user;
+        [MongoIgnore]
+        public User User
+        {
+            get
+            {
+                // Lazy-load.
+                if (_user == null)
+                {
+                    _user = DbContext.Current.Single<User>(u => u.Id == OwnerId);
+                }
+
+                return _user;
+            }
+            set
+            {
+                OwnerId = value.Id;
+                _user = value;
+            }
+        }
     }
 
-    public class TypFotky
+    public class TypFotky : DomainModel
     {
-        public TypyFotek IdTypu { get; set; }
+        public string JmenoTypu { get; set; }
         public string Adresar { get; set; }
+        public int X { get; set; }
+        public int? Y { get; set; }
     }
 
-    public enum TypyFotek
+    public class User : DomainModel
     {
-        Original = 1,
-        Galerie = 2,
-        Thumbnail = 3
-    }
-
-    public class User
-    {
-        public ObjectId Id { get; set; }
         public string UserName { get; set; }
+        public string UserNameSEO { get; set; }
         public string Email { get; set; }
         public string PasswordCrypted { get; set; }
     }
-
 }

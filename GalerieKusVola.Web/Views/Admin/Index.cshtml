@@ -1,11 +1,11 @@
-﻿@model List<GalerieKusVola.Models.Galerie>
+﻿@model GalerieKusVola.ViewModels.AdminVM
 
 <h2>Adminsitrace galerií</h2>
 
-@if(Model != null && Model.Count > 0)
+@if(Model.Galerie != null && Model.Galerie.Count > 0)
 {
     <ul>
-    @foreach (var galerie in Model)
+    @foreach (var galerie in Model.Galerie)
     {
         <li>
             @galerie.Nazev
@@ -16,4 +16,33 @@
 }
 
 <a href="/Admin/GalleryEdit">nová galerie</a>
+
+<hr />
+<h2>Administrace typů fotek</h2>
+
+@if(Model.TypyFotek != null && Model.TypyFotek.Count > 0)
+{
+    <ul>
+        @foreach (var typ in Model.TypyFotek)
+        {
+            <li>
+                @typ.JmenoTypu
+                &nbsp; <a href="/Admin/PhotoTypeEdit/@typ.Id">editovat</a>
+            </li>
+        }
+    </ul>
+}
+
+<a href="/Admin/PhotoTypeEdit">nový typ</a>
+<hr />
+<h2>Fotky čekající na zpracování</h2>
+
+@if(Model.PhotosWaiting != null && Model.PhotosWaiting.Count > 0)
+{
+    foreach (var photo in Model.PhotosWaiting)
+    {
+        <li>@photo.FileName (@photo.UploadedDate.ToString("F"))</li>
+    }
+}
+
 
