@@ -12,16 +12,16 @@ using Encoder = System.Drawing.Imaging.Encoder;
 
 namespace GalerieKusVola.Managers
 {
-    public class ImageWarehouse
+    public class ImageProcessingManager
     {
-        public static string GetOriginalFullPath(Fotka fotka)
+        public static string GetPhotoFullPath(Fotka fotka, TypFotky photoType)
         {
-            if (fotka == null) { throw new ArgumentException("fotka"); }
+            if (fotka == null || photoType == null) { throw new ArgumentException("fotka nebo typ"); }
 
-            if (fotka.TypyFotek != null && fotka.TypyFotek.Any(f => f.JmenoTypu.ToLower() == "original"))
+            if (fotka.TypyFotek != null && fotka.TypyFotek.Any(f => f.SystemName.ToLower() == photoType.SystemName.ToLower()))
             {
-                var origTypeFolder = fotka.TypyFotek.First(f => f.JmenoTypu.ToLower() == "original").Adresar;
-                return HttpContext.Current.Server.MapPath(string.Format(@"{0}\{1}\{2}", fotka.BaseFotkaPath, origTypeFolder, fotka.NazevSouboru));
+                var typeFolder = fotka.TypyFotek.First(f => f.SystemName.ToLower() == photoType.SystemName.ToLower()).Adresar;
+                return HttpContext.Current.Server.MapPath(string.Format("{0}/{1}/{2}", fotka.BaseFotkaVirtualPath, typeFolder, fotka.NazevSouboru));
             }
 
             throw new Exception(string.Format("U fotky id: {0} není definice originálu!", fotka.Id));
@@ -29,9 +29,9 @@ namespace GalerieKusVola.Managers
         
         
         #region ImageDimensions
-        public static int[] GetImageDimensions(Fotka fotka)
+        public static int[] GetImageDimensions(Fotka fotka, TypFotky photoType)
         {
-            var fullPath = GetOriginalFullPath(fotka);
+            var fullPath = GetPhotoFullPath(fotka, photoType);
             return GetImageDimensions(fullPath);
         }
 
@@ -79,9 +79,34 @@ namespace GalerieKusVola.Managers
 
         #endregion
 
-        public static void ResizeImage(Fotka fotka, TypFotky targetType)
+        public static void ResizeImage(Fotka fotka, TypFotky fromType, TypFotky targetType)
         {
-            var fullPath = GetOriginalFullPath(fotka);
+            if(FotkaManager.FotkaTypExist(fotka, targetType))
+            {
+                //TODO: double check photoType really exists on disk.
+                return;
+            }
+            
+            ResizeImage(fotka, fromType, targetType, null);
+        }
+
+        public static void ResizeImage(Fotka fotka, TypFotky fromType, TypFotky targetType, string savePath)
+        {
+            var thumb = DoResizeImage(fotka, fromType, targetType);
+
+            if(string.IsNullOrEmpty(savePath))
+            {
+                SaveImage(thumb, fotka, targetType);
+            }
+            else
+            {
+                SaveImage(thumb, savePath, fotka.NazevSouboru);
+            }
+        }
+        
+        private static Bitmap DoResizeImage(Fotka fotka, TypFotky fromType, TypFotky targetType)
+        {
+            var fullPath = GetPhotoFullPath(fotka, fromType);
             var origImage = LoadImage(fullPath);
 
             int resX = targetType.X;
@@ -127,8 +152,7 @@ namespace GalerieKusVola.Managers
 
             origImage.Dispose();
 
-            SaveImage(thumbImage, fotka, targetType );
-            
+            return thumbImage;
         }
 
         private static Image LoadImage(string imagePath)
@@ -147,23 +171,28 @@ namespace GalerieKusVola.Managers
 
         private static void SaveImage(Bitmap thumbImage, Fotka fotka, TypFotky targetType)
         {
-            var targetTypeDirectory = HttpContext.Current.Server.MapPath(string.Format(@"{0}\{1}", fotka.BaseFotkaPath, targetType.Adresar));
+            var targetTypeDirectory = HttpContext.Current.Server.MapPath(string.Format(@"{0}\{1}", fotka.BaseFotkaVirtualPath, targetType.Adresar));
+            
+            SaveImage(thumbImage, targetTypeDirectory, fotka.NazevSouboru);
+        }
 
+        private static void SaveImage(Bitmap thumbImage, string targetDir, string targetFileName)
+        {
             // create directory if it doesn't exist
-            var di = new DirectoryInfo(targetTypeDirectory);
+            var di = new DirectoryInfo(targetDir);
             if (!di.Exists)
             {
                 di.Create();
             }
 
-            var fullSavePath = string.Format(@"{0}\{1}", targetTypeDirectory, fotka.NazevSouboru);
-            
+            var fullSavePath = string.Format(@"{0}\{1}", targetDir, targetFileName);
+
             var fi = new FileInfo(fullSavePath);
             if (fi.Exists)
             {
                 fi.Delete();
             }
-
+            
             ImageCodecInfo[] info = ImageCodecInfo.GetImageEncoders();
             var encoderParameters = new EncoderParameters(1);
             encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 95L);

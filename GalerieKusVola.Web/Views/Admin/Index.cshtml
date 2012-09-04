@@ -4,15 +4,11 @@
 
 @if(Model.Galerie != null && Model.Galerie.Count > 0)
 {
-    <ul>
-    @foreach (var galerie in Model.Galerie)
-    {
-        <li>
-            @galerie.Nazev
-            &nbsp; <a href="/Admin/GalleryEdit/@galerie.Id">editovat</a>
-        </li>
-    }
-    </ul>
+    var rootGallery = Model.Galerie.First(g => g.ParentId == null || g.ParentId == "000000000000000000000000");
+    
+    <p>@rootGallery.Nazev (<a href="/admin/GalleryEdit/@rootGallery.Id">edit</a>)</p>
+    
+    @Html.Action("GalleryLeaf", "GalleryLeaf", new { area = "Partials", leafId = rootGallery.Id })
 }
 
 <a href="/Admin/GalleryEdit">nová galerie</a>
@@ -35,14 +31,7 @@
 
 <a href="/Admin/PhotoTypeEdit">nový typ</a>
 <hr />
-<h2>Fotky čekající na zpracování</h2>
 
-@if(Model.PhotosWaiting != null && Model.PhotosWaiting.Count > 0)
-{
-    foreach (var photo in Model.PhotosWaiting)
-    {
-        <li>@photo.FileName (@photo.UploadedDate.ToString("F"))</li>
-    }
-}
+<a href="/Admin/ProcessUploadedPhotos">Zpracování uploadnutých fotek</a>
 
 

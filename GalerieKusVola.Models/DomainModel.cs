@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Web;
 using GalerieKusVola.Repository.Context;
 using Norm;
 using Norm.Attributes;
@@ -89,9 +90,9 @@ namespace GalerieKusVola.Models
         public string NazevSouboru { get; set; }
 
         [MongoIgnore]
-        public string BaseFotkaPath
+        public string BaseFotkaVirtualPath
         {
-            get { return string.Format(@"{0}\{1}\", ConfigurationManager.AppSettings["GalerieRootDir"], User.UserNameSEO); }
+            get { return string.Format("/{0}/{1}", ConfigurationManager.AppSettings["GalerieRootDirVirtualPath"], User.UserNameSEO); }
         }
         
         public DateTime DatumUploadu { get; set; }
@@ -125,6 +126,7 @@ namespace GalerieKusVola.Models
     public class TypFotky : DomainModel
     {
         public string JmenoTypu { get; set; }
+        public string SystemName { get; set; }
         public string Adresar { get; set; }
         public int X { get; set; }
         public int? Y { get; set; }

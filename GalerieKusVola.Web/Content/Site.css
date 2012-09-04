@@ -59,3 +59,27 @@ textarea {
 .validation-summary-valid {
     display: none;
 }
+
+
+
+/*Admin*/
+.two-cols {margin: 10px 0 15px 0; line-height: 1.55em;}
+.two-cols .col1 {float: left; width: 680px; padding-right: 20px; position: relative;}
+.two-cols .col2 {float: left; width: 320px; padding-right: 0; position: relative; margin-right: 0;}
+.cleaner {clear: both;}
+
+#photos { float: left; min-height: 12em; } * html #photos { height: 12em; } /* IE6 */
+.photos.custom-state-active { background: #eee; }
+.photos li { float: left; padding: 0.4em; margin: 0 0.4em 0.4em 0; text-align: center; }
+.photos li a { float: right; }
+.photos li a.ui-icon-zoomin { float: left; }
+/*.photos li img { width: 100%; cursor: move; }*/
+
+#trash { float: right; width: 32%; min-height: 18em; padding: 1%;} * html #trash { height: 18em; } /* IE6 */
+#trash h4 { line-height: 16px; margin: 0 0 0.4em; }
+#trash h4 .ui-icon { float: left; }
+#trash .gallery h5 { display: none; }
+
+
+#photos .ui-selecting { background: #FECA40; }
+#photos .ui-selected { background: #F39814; color: white; }

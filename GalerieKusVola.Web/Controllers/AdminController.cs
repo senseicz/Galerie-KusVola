@@ -108,14 +108,139 @@ namespace GalerieKusVola.Web.Controllers
         {
             var galerie = GalerieManager.GetGalerieForUser(CurrentUserID);
             var typyFotek = FotkaManager.GetAll();
-
-            var userDir = CurrentUser.UserNameSEO;
-
-            var photosWaiting = FotkaManager.GetWaitingPhotos(userDir);
-            var retModel = new AdminVM {Galerie = galerie, TypyFotek = typyFotek, PhotosWaiting = photosWaiting};
+            var retModel = new AdminVM {Galerie = galerie, TypyFotek = typyFotek};
 
             return View(retModel);
         }
+        #endregion
+
+        #region Process uploaded photos
+        public ActionResult ProcessUploadedPhotos()
+        {
+            var photosWaiting = FotkaManager.GetWaitingPhotos(CurrentUser);
+            var userGalleries = GalerieManager.GetGalerieForUser(CurrentUser.Id);
+
+            var retModel = new ProcessUploadedPhotosVM{Galleries = userGalleries, PhotosWaiting = photosWaiting};
+
+            return View(retModel);
+        }
+
+        [HttpPost]
+        public ActionResult ProcessUploadedPhotosCustom()
+        {
+            var request = Request.Form;
+
+            if (request.Keys.Count > 0)
+            {
+                foreach (var key in request.Keys)
+                {
+                    if (key.ToString().StartsWith("addedPhotos-") && request[key.ToString()].Length > 0)
+                    {
+                        var split = key.ToString().Split(new[] {'-'});
+                        var galleryId = split[1];
+                        var values = request[key.ToString()];
+
+                        if (values.EndsWith(","))
+                        {
+                            values = values.Substring(0, values.Length - 1);
+                        }
+
+                        var photoIdsArr = values.Split(new[] {','});
+                        GalerieManager.AddPhotosToGallery(galleryId, photoIdsArr);
+                    }
+                }
+            }
+
+            return RedirectToAction("ProcessUploadedPhotos");
+        }
+
+        #endregion
+
+        #region Gallery
+        public ActionResult GalleryEdit(string Id)
+        {
+            GalleryEdit retModel;
+            
+            if(!string.IsNullOrEmpty(Id))
+            {
+                var gal = GalerieManager.GetById(Id);
+                retModel = new GalleryEdit
+                    {
+                        GalleryId = gal.Id,
+                        Nazev = gal.Nazev,
+                        Popis = gal.Popis,
+                        GalleryList = GetGallerySelectList(gal.ParentId),
+                        Poradi = gal.Poradi
+                    };
+            }
+            else
+            {
+                retModel = new GalleryEdit { GalleryList = GetGallerySelectList(null) };
+            }
+
+            return View(retModel);
+        }
+
+
+        private static SelectList GetGallerySelectList(string selectedGalleryId)
+        {
+            var galsDb = GalerieManager.GetAll();
+            var gals = new List<Galerie>();
+
+            gals.AddRange(galsDb);
+
+            if (!string.IsNullOrEmpty(selectedGalleryId))
+            {
+                return new SelectList(gals, "Id", "Nazev", selectedGalleryId);
+            }
+
+            return new SelectList(gals, "Id", "Nazev");
+        }
+
+        [HttpPost]
+        public ActionResult GalleryEdit(GalleryEdit galEdit)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var gal = new Galerie
+                        {
+                            DatumVytvoreni = DateTime.Now,
+                            Nazev = galEdit.Nazev,
+                            Popis = galEdit.Popis,
+                            ParentId = galEdit.ParentGalleryId == "0" ? null : galEdit.ParentGalleryId, //editing root gallery ==> ParentGalleryId == "0"
+                            Poradi = galEdit.Poradi,
+                            OwnerId = CurrentUser.Id
+                        };
+
+                    if(!string.IsNullOrEmpty(galEdit.GalleryId)) //UPDATE
+                    {
+                        gal.Id = galEdit.GalleryId;
+                        GalerieManager.Save(gal);
+                        galEdit.OKMessage = "Update typu proběhl úspěšně.";
+                    }
+                    else //INSERT
+                    {
+                        gal.OwnerId = CurrentUser.Id;
+                        GalerieManager.Save(gal);
+                        galEdit.OKMessage = "Uložení nové galerie proběhlo úspěšně.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    galEdit.ErrorMessage = "Při ukládání galerie došlo k chybě: " + ex.Message;
+                }
+            }
+            else
+            {
+                galEdit.ErrorMessage = "Některá povinná položka není vyplněná.";
+            }
+
+            return View(galEdit);
+        }
+
+
         #endregion
 
         #region PhotoTypeEdit
@@ -126,7 +251,15 @@ namespace GalerieKusVola.Web.Controllers
             if(!string.IsNullOrEmpty(Id))
             {
                 var typFotky = FotkaManager.GetById(Id);
-                retModel = new PhotoTypeEdit { PhotoTypeId = typFotky.Id, Adresar = typFotky.Adresar, NazevTypu = typFotky.JmenoTypu, X = typFotky.X, Y = typFotky.Y };    
+                retModel = new PhotoTypeEdit
+                    {
+                        PhotoTypeId = typFotky.Id,
+                        SystemName = typFotky.SystemName,
+                        Adresar = typFotky.Adresar,
+                        NazevTypu = typFotky.JmenoTypu,
+                        X = typFotky.X,
+                        Y = typFotky.Y
+                    };
             }
             else
             {
@@ -143,7 +276,7 @@ namespace GalerieKusVola.Web.Controllers
             {
                 try
                 {
-                    var typFotky = new TypFotky {JmenoTypu = ptEdit.NazevTypu, Adresar = ptEdit.Adresar, X = ptEdit.X};
+                    var typFotky = new TypFotky {JmenoTypu = ptEdit.NazevTypu, Adresar = ptEdit.Adresar, SystemName = ptEdit.SystemName, X = ptEdit.X};
                     if(ptEdit.Y.HasValue)
                     {
                         typFotky.Y = ptEdit.Y.Value;
@@ -161,7 +294,8 @@ namespace GalerieKusVola.Web.Controllers
                     }
                     else //UPDATE
                     {
-                        FotkaManager.Update(typFotky);
+                        //FotkaManager.Update(typFotky);
+                        FotkaManager.Save(typFotky);
                         ptEdit.OKMessage = "Update typu proběhl úspěšně.";
                     }
                 }

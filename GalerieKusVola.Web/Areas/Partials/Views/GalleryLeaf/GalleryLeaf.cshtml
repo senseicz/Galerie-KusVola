@@ -1,0 +1,11 @@
+﻿@model List<GalerieKusVola.Models.Galerie>
+
+<ul>
+    @foreach(var galerie in Model.OrderBy(m => m.Poradi))
+    {
+        <li>
+            @galerie.Nazev [počet fotek: @galerie.PocetFotek] <a href="/Admin/GalleryEdit/@galerie.Id">editovat</a>
+            @Html.Action("GalleryLeaf", "GalleryLeaf", new { area = "Partials", leafId = galerie.Id })
+        </li>
+    }
+</ul>

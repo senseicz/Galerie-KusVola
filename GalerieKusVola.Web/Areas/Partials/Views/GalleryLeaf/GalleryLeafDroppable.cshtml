@@ -1,0 +1,37 @@
+﻿@model List<GalerieKusVola.Models.Galerie>
+
+<ul>
+    @foreach(var galerie in Model.OrderBy(m => m.Poradi))
+    {
+        string photosAlreadyIn = "";
+
+        if (galerie.PocetFotek > 0)
+        {
+            foreach (var photo in galerie.Fotky)
+            {
+                photosAlreadyIn = photosAlreadyIn + photo.Id + ",";
+            }
+        }
+
+        <li id="gal-@galerie.Id">
+            @galerie.Nazev [počet: <span id="gal-counter-@galerie.Id">@galerie.PocetFotek</span>, nově přidaných <span id="gal-newCounter-@galerie.Id">0</span>] 
+            
+            <input type="hidden" name="addedPhotos-@galerie.Id" id="addedPhotos-@galerie.Id" value="@photosAlreadyIn" />
+            
+            @*            
+            <textarea id="txt-@galerie.Id">
+                @if(galerie.PocetFotek > 0)
+                {
+                    foreach (var fotka in galerie.Fotky)
+                    {
+                        @:[@fotka.Id],
+                    }
+                }
+            </textarea>*@
+
+            <input type="button" value="Přidat označené fotky" onclick="addSelectedPhotosToGallery('@galerie.Id') "/>
+
+            @Html.Action("GalleryLeafDroppable", "GalleryLeaf", new { area = "Partials", leafId = galerie.Id })
+        </li>
+    }
+</ul>

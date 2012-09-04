@@ -1,1 +1,47 @@
-﻿
+﻿@model GalerieKusVola.ViewModels.GalleryEdit
+
+<h2>Galerie</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p class="ErrorMessage">@Html.Raw(Model.ErrorMessage)</p>
+}
+
+@if (!string.IsNullOrEmpty(Model.OKMessage))
+{
+    <p class="OKMessage">@Model.OKMessage</p>
+    <p><a href="/Admin">zpět na seznam</a></p>
+}
+
+
+@if (string.IsNullOrEmpty(Model.OKMessage))
+{
+    using (Html.BeginForm("GalleryEdit"))
+    {
+        @Html.HiddenFor(r => r.GalleryId)
+        <p>
+            Název galerie:  @Html.TextBoxFor(r => r.Nazev)
+        </p>
+        <p>
+            Popis:  @Html.TextBoxFor(r => r.Popis)
+        </p>
+        <p>
+            Pořadí: @Html.TextBoxFor(r => r.Poradi)
+        </p>
+        
+        if(Model.GalleryId == null || Model.ParentGalleryId != null )
+        {
+            <p>
+                Rodičovská galerie: @Html.DropDownList("ParentGalleryId", Model.GalleryList, "---Vyberte rodičovskou galerii")
+            </p>
+        }
+        else
+        {
+            <input type="hidden" name="ParentGalleryId" value="0"/>
+        }
+
+        <p>
+            <input type="submit" name="btnSubmit" id="SubmitButton" value="Odeslat" />
+        </p>    
+    }
+}

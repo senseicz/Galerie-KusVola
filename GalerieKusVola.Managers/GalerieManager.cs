@@ -63,5 +63,29 @@ namespace GalerieKusVola.Managers
             DbContext.Current.Delete<Galerie>(d => d.Id == galerie.Id);
         }
 
+        public static void AddPhotosToGallery(string galleryId, string[] photoIds)
+        {
+            var gallery = GetById(galleryId);
+            if(gallery != null)
+            {
+                if(gallery.Fotky == null)
+                {
+                    gallery.Fotky = new List<Fotka>();
+                }
+                
+                foreach (var photoId in photoIds)
+                {
+                    if (gallery.Fotky.Any(f => f.Id == photoId))
+                    {
+                        continue;
+                    }
+                    
+                    var photo = FotkaManager.GetFotka(photoId);
+                    gallery.Fotky.Add(photo);
+                }
+
+                Save(gallery);
+            }
+        }
     }
 }

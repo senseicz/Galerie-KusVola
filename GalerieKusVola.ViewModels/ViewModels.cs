@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
+using GalerieKusVola.Models;
 
 namespace GalerieKusVola.ViewModels
 {
@@ -32,11 +34,21 @@ namespace GalerieKusVola.ViewModels
 
     public class GalleryEdit : BaseViewModel
     {
+        public string GalleryId { get; set; }
+        
         [Required]
         public string Nazev { get; set; }
 
         [Required]
         public string Popis { get; set; }
+
+        [Required]
+        public string ParentGalleryId { get; set; }
+
+        [Required]
+        public int Poradi { get; set; }
+
+        public SelectList GalleryList { get; set; }
     }
 
     public class PhotoTypeEdit : BaseViewModel
@@ -45,6 +57,9 @@ namespace GalerieKusVola.ViewModels
 
         [Required]
         public string NazevTypu { get; set; }
+
+        [Required]
+        public string SystemName { get; set; }
 
         [Required]
         public string Adresar { get; set; }
@@ -57,15 +72,24 @@ namespace GalerieKusVola.ViewModels
 
     public class AdminVM
     {
-        public List<Models.Galerie> Galerie { get; set; }
-        public List<Models.TypFotky> TypyFotek { get; set; }
-        public List<OrigPhotosWaiting> PhotosWaiting { get; set; } 
+        public List<Galerie> Galerie { get; set; }
+        public List<TypFotky> TypyFotek { get; set; }
+    }
+
+    public class ProcessUploadedPhotosVM
+    {
+        public List<OrigPhotosWaiting> PhotosWaiting { get; set; }
+        public List<Galerie> Galleries { get; set; } 
     }
 
     public class OrigPhotosWaiting
     {
+        public string Id { get; set; }
         public string FileName { get; set; }
         public DateTime UploadedDate { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public string ThumbPath { get; set; }
     }
 
 }
