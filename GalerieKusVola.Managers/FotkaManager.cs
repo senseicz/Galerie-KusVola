@@ -143,7 +143,7 @@ namespace GalerieKusVola.Managers
             var files = GetFilesInUploadDirectory(currentUserDir);
             if(files.Length > 0)
             {
-                var uploadTempType = GetBySystemName("uploadtemp");
+                var uploadTempType = GetBySystemName("minithumb");
                 var uploadType = GetBySystemName("upload");
                 
                 for(int i=0; i<files.Length; i++)

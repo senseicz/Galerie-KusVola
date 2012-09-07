@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Configuration;
-using Norm;
 using GalerieKusVola.Repository.Interface;
 using GalerieKusVola.Repository.Helpers;
+using MongoDB.Driver;
 
 namespace GalerieKusVola.Repository.Concrete
 {
     public class MongoRepository : IRepository
     {
-        private IMongo _provider;
-        private IMongoDatabase _db { get { return this._provider.Database; } }
+        private MongoServer _provider;
+        private MongoDatabase _db { get { return _provider.GetDatabase("kusvola_galerie", SafeMode.True); } }
 
         public MongoRepository()
         {
-            _provider = Mongo.Create(ConfigurationManager.ConnectionStrings["db"].ConnectionString);
+            _provider = MongoServer.Create(ConfigurationManager.ConnectionStrings["db"].ConnectionString);
         }
 
         public void Delete<T>(System.Linq.Expressions.Expression<Func<T, bool>> expression) where T : class, new()
@@ -29,8 +29,10 @@ namespace GalerieKusVola.Repository.Concrete
 
         public void Delete<T>(T item) where T : class, new()
         {
-            // Remove the object.
-            _db.GetCollection<T>().Delete(item);
+            Type g = typeof(T);
+            var collectionName = g.Name;
+            
+            _db.GetCollection<T>(collectionName).Remove()
         }
 
         public void DeleteAll<T>() where T : class, new()

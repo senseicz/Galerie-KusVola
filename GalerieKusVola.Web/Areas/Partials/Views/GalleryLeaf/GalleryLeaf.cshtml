@@ -1,10 +1,11 @@
-﻿@model List<GalerieKusVola.Models.Galerie>
+﻿@model List<GalerieKusVola.Core.DomainModel.Gallery>
 
 <ul>
-    @foreach(var galerie in Model.OrderBy(m => m.Poradi))
+    @foreach(var galerie in Model.OrderBy(m => m.Order))
     {
         <li>
-            @galerie.Nazev [počet fotek: @galerie.PocetFotek] <a href="/Admin/GalleryEdit/@galerie.Id">editovat</a>
+            @galerie.Name [počet fotek: @galerie.PhotosCount] <a href="/Admin/GalleryEdit/@galerie.Id">editovat</a> |
+            <a href="/admin/DeleteGallery/@galerie.Id" onclick="return confirm('Skutečně smazat?')">smazat</a>
             @Html.Action("GalleryLeaf", "GalleryLeaf", new { area = "Partials", leafId = galerie.Id })
         </li>
     }

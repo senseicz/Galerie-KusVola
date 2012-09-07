@@ -1,36 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Web;
-using GalerieKusVola.Repository.Context;
+using GalerieKusVola.Core.Managers;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace GalerieKusVola.Models
+namespace GalerieKusVola.Core.DomainModel
 {
     public class DomainModel
     {
         public ObjectId Id { get; set; }
     }
 
-    public class Galerie : DomainModel
+    public class Gallery : DomainModel
     {
         public ObjectId OwnerId { get; set; }
         public ObjectId ParentId { get; set; }
-        public string Nazev { get; set; }
-        public string Popis { get; set; }
-        public DateTime DatumVytvoreni { get; set; }
-        public int Poradi { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime DateCreated { get; set; }
+        public int Order { get; set; }
 
         public List<GalleryPhoto> Photos { get; set; }
         public List<GalleryPhoto> PreviewPhotos { get; set; }
         public List<Diary> Diaries { get; set; }
 
         [BsonIgnore]
-        public int PocetFotek
+        public int PhotosCount
         {
             get
             {
@@ -42,24 +39,24 @@ namespace GalerieKusVola.Models
             }
         }
 
-        private Galerie _parentGalerie;
+        private Gallery _parentGallery;
         [BsonIgnore]
-        public Galerie ParentGalerie
+        public Gallery ParentGallery
         {
             get
             {
                 // Lazy-load.
-                if (_parentGalerie == null)
+                if (_parentGallery == null)
                 {
-                    _parentGalerie = DbContext.Current.Single<Galerie>(g => g.Id == ParentId);
+                    _parentGallery = new GalleryManager().GetById(ParentId);
                 }
 
-                return _parentGalerie;
+                return _parentGallery;
             }
             set
             {
                 ParentId = value.Id;
-                _parentGalerie = value;
+                _parentGallery = value;
             }
         }
 
@@ -72,7 +69,7 @@ namespace GalerieKusVola.Models
                 // Lazy-load.
                 if (_user == null)
                 {
-                    _user = DbContext.Current.Single<User>(u => u.Id == OwnerId);
+                    _user = new UserManager().GetByUserId(OwnerId);
                 }
 
                 return _user;
@@ -85,36 +82,36 @@ namespace GalerieKusVola.Models
         }
     }
 
-    public class GalleryPhoto : Fotka
+    public class GalleryPhoto : Photo
     {
         public int Order { get; set; }
-        
-        public GalleryPhoto(Fotka photo, int order)
+
+        public GalleryPhoto(Photo photo, int order)
         {
             Id = photo.Id;
             OwnerId = photo.OwnerId;
-            NazevSouboru = photo.NazevSouboru;
-            DatumUploadu = photo.DatumUploadu;
-            DatumFotky = photo.DatumFotky;
-            Popis = photo.Popis;
-            TypyFotek = photo.TypyFotek;
+            FileName = photo.FileName;
+            DateUploaded = photo.DateUploaded;
+            DateCreated = photo.DateCreated;
+            Description = photo.Description;
+            PhotoTypes = photo.PhotoTypes;
             Order = order;
         }
     }
 
-    public class Fotka : DomainModel
+    public class Photo : DomainModel
     {
         public ObjectId OwnerId { get; set; }
-        public string NazevSouboru { get; set; }
-        public DateTime DatumUploadu { get; set; }
-        public DateTime DatumFotky { get; set; }
-        public string Popis { get; set; }
-        public List<TypFotky> TypyFotek { get; set; }
+        public string FileName { get; set; }
+        public DateTime DateUploaded { get; set; }
+        public DateTime DateCreated { get; set; }
+        public string Description { get; set; }
+        public List<PhotoType> PhotoTypes { get; set; }
 
         [BsonIgnore]
-        public string BaseFotkaVirtualPath
+        public string BasePhotoVirtualPath
         {
-            get { return string.Format("/{0}/{1}", ConfigurationManager.AppSettings["GalerieRootDirVirtualPath"], User.UserNameSEO); }
+            get { return string.Format("/{0}/{1}", ConfigurationManager.AppSettings["GalleryRootDirVirtualPath"], User.UserNameSEO); }
         }
 
         private User _user;
@@ -126,7 +123,7 @@ namespace GalerieKusVola.Models
                 // Lazy-load.
                 if (_user == null)
                 {
-                    _user = DbContext.Current.Single<User>(u => u.Id == OwnerId);
+                    _user = new UserManager().GetByUserId(OwnerId);
                 }
 
                 return _user;
@@ -140,19 +137,19 @@ namespace GalerieKusVola.Models
 
         public string GetPhotoUrl(string photoTypeSystemName)
         {
-            if (TypyFotek != null && TypyFotek.Any(t => t.SystemName.ToLower() == photoTypeSystemName.ToLower()))
+            if (PhotoTypes != null && PhotoTypes.Any(t => t.SystemName.ToLower() == photoTypeSystemName.ToLower()))
             {
-                return string.Format("{0}/{1}/{2}", BaseFotkaVirtualPath, TypyFotek.First(t => t.SystemName.ToLower() == photoTypeSystemName.ToLower()).Adresar, NazevSouboru);
+                return string.Format("{0}/{1}/{2}", BasePhotoVirtualPath, PhotoTypes.First(t => t.SystemName.ToLower() == photoTypeSystemName.ToLower()).Directory, FileName);
             }
             return "";
         }
     }
 
-    public class TypFotky : DomainModel
+    public class PhotoType : DomainModel
     {
-        public string JmenoTypu { get; set; }
+        public string Name { get; set; }
         public string SystemName { get; set; }
-        public string Adresar { get; set; }
+        public string Directory { get; set; }
         public int X { get; set; }
         public int? Y { get; set; }
     }
@@ -180,7 +177,7 @@ namespace GalerieKusVola.Models
                 // Lazy-load.
                 if (_user == null)
                 {
-                    _user = DbContext.Current.Single<User>(u => u.Id == OwnerId);
+                    _user = new UserManager().GetByUserId(OwnerId);
                 }
 
                 return _user;
@@ -192,4 +189,6 @@ namespace GalerieKusVola.Models
             }
         }
     }
+
+
 }

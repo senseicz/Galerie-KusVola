@@ -1,20 +1,20 @@
-﻿@model List<GalerieKusVola.Models.Galerie>
+﻿@model List<GalerieKusVola.Core.DomainModel.Gallery>
 
 <ul>
-    @foreach(var galerie in Model.OrderBy(m => m.Poradi))
+    @foreach(var galerie in Model.OrderBy(m => m.Order))
     {
         string photosAlreadyIn = "";
 
-        if (galerie.PocetFotek > 0)
+        if (galerie.PhotosCount > 0)
         {
-            foreach (var photo in galerie.Fotky)
+            foreach (var photo in galerie.Photos)
             {
                 photosAlreadyIn = photosAlreadyIn + photo.Id + ",";
             }
         }
 
         <li id="gal-@galerie.Id">
-            @galerie.Nazev [počet: <span id="gal-counter-@galerie.Id">@galerie.PocetFotek</span>, nově přidaných <span id="gal-newCounter-@galerie.Id">0</span>] 
+            @galerie.Name [počet: <span id="gal-counter-@galerie.Id">@galerie.PhotosCount</span>, nově přidaných <span id="gal-newCounter-@galerie.Id">0</span>] 
             
             <input type="hidden" name="addedPhotos-@galerie.Id" id="addedPhotos-@galerie.Id" value="@photosAlreadyIn" />
             

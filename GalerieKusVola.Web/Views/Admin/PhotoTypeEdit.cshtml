@@ -1,4 +1,4 @@
-﻿@model GalerieKusVola.ViewModels.PhotoTypeEdit
+﻿@model GalerieKusVola.Core.ViewModels.PhotoTypeEdit
 
 <h2>Typ fotky</h2>
 
@@ -20,13 +20,13 @@
     {
         @Html.HiddenFor(r => r.PhotoTypeId)
         <p>
-            Název typu:  @Html.TextBoxFor(r => r.NazevTypu)
+            Název typu:  @Html.TextBoxFor(r => r.Name)
         </p>
         <p>
             Systémový název:  @Html.TextBoxFor(r => r.SystemName)
         </p>
         <p>
-            Adresář: @Html.TextBoxFor(r => r.Adresar)
+            Adresář: @Html.TextBoxFor(r => r.Directory)
         </p>
         <p>
             Cílová šířka fotky: @Html.TextBoxFor(r => r.X)

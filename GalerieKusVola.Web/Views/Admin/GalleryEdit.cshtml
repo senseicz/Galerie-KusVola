@@ -1,4 +1,15 @@
-﻿@model GalerieKusVola.ViewModels.GalleryEdit
+﻿@using MongoDB.Bson
+@model GalerieKusVola.Core.ViewModels.GalleryEdit
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/jqueryui")
+    @Styles.Render("~/Content/themes/base/css")
+
+    <script>
+        
+    </script>
+}
 
 <h2>Galerie</h2>
 
@@ -20,28 +31,58 @@
     {
         @Html.HiddenFor(r => r.GalleryId)
         <p>
-            Název galerie:  @Html.TextBoxFor(r => r.Nazev)
+            Název galerie:  @Html.TextBoxFor(r => r.Name)
         </p>
         <p>
-            Popis:  @Html.TextBoxFor(r => r.Popis)
+            Popis:  @Html.TextBoxFor(r => r.Description)
         </p>
         <p>
-            Pořadí: @Html.TextBoxFor(r => r.Poradi)
+            Pořadí: @Html.TextBoxFor(r => r.Order)
         </p>
-        
-        if(Model.GalleryId == null || Model.ParentGalleryId != null )
+
+        if (Model.GalleryId == null || Model.ParentGalleryId != ObjectId.Empty.ToString())
         {
-            <p>
-                Rodičovská galerie: @Html.DropDownList("ParentGalleryId", Model.GalleryList, "---Vyberte rodičovskou galerii")
-            </p>
+        <p>
+            Rodičovská galerie: @Html.DropDownList("ParentGalleryId", Model.GalleryList, "---Vyberte rodičovskou galerii")
+        </p>
         }
         else
         {
-            <input type="hidden" name="ParentGalleryId" value="0"/>
+        <input type="hidden" name="ParentGalleryId" value="0" />
         }
 
-        <p>
-            <input type="submit" name="btnSubmit" id="SubmitButton" value="Odeslat" />
-        </p>    
+        <hr />
+    
+        if (Model.Photos != null && Model.Photos.Count > 0)
+        {
+            <h2>Preview fotky (max. 5)</h2>
+            <div class="container-w800">
+                <ul id="photos" class="photos ui-helper-reset ui-helper-clearfix">
+                @foreach (var photo in Model.Photos.OrderBy(p => p.Order))
+                {
+                    <li class="ui-widget-content ui-corner-tr" data-photoId="@photo.Id">
+                        <img src='@photo.GetPhotoUrl("minithumb")'/>
+                    </li>
+                }
+                </ul>
+            </div>
+
+            <div class="fc18"></div>    
+                
+            <h2>Fotky v galerii</h2>
+            <div class="container-w800">
+                <ul id="photos" class="photos ui-helper-reset ui-helper-clearfix">
+                @foreach (var photo in Model.Photos.OrderBy(p => p.Order))
+                {
+                    <li class="ui-widget-content ui-corner-tr" data-photoId="@photo.Id">
+                        <img src='@photo.GetPhotoUrl("minithumb")'/>
+                    </li>
+                }
+                </ul>
+            </div>
+        }
+
+        <div class="cleaner"></div>        
+        <input type="submit" name="btnSubmit" id="SubmitButton" value="Uložit změny" />
     }
 }

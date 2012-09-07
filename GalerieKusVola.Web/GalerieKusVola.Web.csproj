@@ -39,10 +39,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FluentMongo">
+      <HintPath>..\packages\FluentMongo.1.3.1.1\lib\FluentMongo.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Norm, Version=0.9.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NoRM.0.9.8\lib\Norm.dll</HintPath>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\mongocsharpdriver.1.6\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\mongocsharpdriver.1.6\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="StructureMap">
       <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
@@ -125,7 +130,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\Bootstrapper.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -256,21 +260,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GalerieKusVola.Managers\GalerieKusVola.Managers.csproj">
-      <Project>{6380f3e5-30fc-4382-b48d-4e34f6a65689}</Project>
-      <Name>GalerieKusVola.Managers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GalerieKusVola.Models\GalerieKusVola.Models.csproj">
-      <Project>{f2353533-98cf-46e1-a6fa-477f9b787304}</Project>
-      <Name>GalerieKusVola.Models</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GalerieKusVola.Repository\GalerieKusVola.Repository.csproj">
-      <Project>{618ba26c-d10c-4146-ab2d-3f4466384c74}</Project>
-      <Name>GalerieKusVola.Repository</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GalerieKusVola.ViewModels\GalerieKusVola.ViewModels.csproj">
-      <Project>{5a65f7e1-fb16-4de6-bbbb-b3bc0573dc71}</Project>
-      <Name>GalerieKusVola.ViewModels</Name>
+    <ProjectReference Include="..\GalerieKusVola.Core\GalerieKusVola.Core.csproj">
+      <Project>{c26ee3a4-1769-48f1-86d9-025e49cc9c14}</Project>
+      <Name>GalerieKusVola.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

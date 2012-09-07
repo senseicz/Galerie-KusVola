@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using GalerieKusVola.Managers;
-using GalerieKusVola.Managers.Utils;
-using GalerieKusVola.Models;
+﻿using System.Web.Mvc;
+using GalerieKusVola.Core.DomainModel;
+using GalerieKusVola.Core.Managers;
 
 namespace GalerieKusVola.Web.Controllers
 {
     public class BaseController : Controller
     {
+        protected readonly UserManager _userManager;
+        
+        public BaseController()
+        {
+            _userManager = new UserManager();
+        }
+        
         /// <summary>
         /// Indicates whether current user is logged in
         /// </summary>
@@ -28,8 +30,8 @@ namespace GalerieKusVola.Web.Controllers
             {
                 if (IsUserLoggedIn)
                 {
-                    var user = UserManager.GetByUserId(ControllerContext.HttpContext.User.Identity.Name);
-                    user.UserNameSEO = SEO.ConvertTextForSEOURL(user.UserName);
+                    var user = _userManager.GetByUserId(ControllerContext.HttpContext.User.Identity.Name);
+                    //user.UserNameSEO = SEO.ConvertTextForSEOURL(user.UserName);
                     return user;
                 }
 
@@ -43,7 +45,7 @@ namespace GalerieKusVola.Web.Controllers
             {
                 if (IsUserLoggedIn)
                 {
-                    return CurrentUser.Id;
+                    return CurrentUser.Id.ToString();
                 }
 
                 return string.Empty;

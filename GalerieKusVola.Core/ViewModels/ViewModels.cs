@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
-using GalerieKusVola.Models;
+using GalerieKusVola.Core.DomainModel;
 
-namespace GalerieKusVola.ViewModels
+namespace GalerieKusVola.Core.ViewModels
 {
     public class BaseViewModel
     {
@@ -37,16 +37,16 @@ namespace GalerieKusVola.ViewModels
         public string GalleryId { get; set; }
         
         [Required]
-        public string Nazev { get; set; }
+        public string Name { get; set; }
 
         [Required]
-        public string Popis { get; set; }
+        public string Description { get; set; }
 
         [Required]
         public string ParentGalleryId { get; set; }
 
         [Required]
-        public int Poradi { get; set; }
+        public int Order { get; set; }
 
         public SelectList GalleryList { get; set; }
 
@@ -60,13 +60,13 @@ namespace GalerieKusVola.ViewModels
         public string PhotoTypeId { get; set; }
 
         [Required]
-        public string NazevTypu { get; set; }
+        public string Name { get; set; }
 
         [Required]
         public string SystemName { get; set; }
 
         [Required]
-        public string Adresar { get; set; }
+        public string Directory { get; set; }
 
         [Required]
         public int X { get; set; }
@@ -76,14 +76,14 @@ namespace GalerieKusVola.ViewModels
 
     public class AdminVM
     {
-        public List<Galerie> Galerie { get; set; }
-        public List<TypFotky> TypyFotek { get; set; }
+        public List<Gallery> Galleries { get; set; }
+        public List<PhotoType> PhotoTypes { get; set; }
     }
 
     public class ProcessUploadedPhotosVM
     {
         public List<OrigPhotosWaiting> PhotosWaiting { get; set; }
-        public List<Galerie> Galleries { get; set; } 
+        public List<Gallery> Galleries { get; set; } 
     }
 
     public class OrigPhotosWaiting

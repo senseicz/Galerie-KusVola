@@ -34,6 +34,11 @@ namespace GalerieKusVola.Managers
             return galerie;
         }
 
+        public static bool IsRootGalleryExistForUser(User owner)
+        {
+            return DbContext.Current.All<Galerie>().Any(d => d.OwnerId == owner.Id && d.ParentId == null);
+        }
+
         public static void CreateRootGallery(User owner)
         {
             var gal = new Galerie
@@ -68,20 +73,27 @@ namespace GalerieKusVola.Managers
             var gallery = GetById(galleryId);
             if(gallery != null)
             {
-                if(gallery.Fotky == null)
-                {
-                    gallery.Fotky = new List<Fotka>();
-                }
+                int maxOrder = 0;
                 
+                if(gallery.Photos == null)
+                {
+                    gallery.Photos = new List<GalleryPhoto>();
+                }
+                else
+                {
+                    maxOrder = gallery.Photos.Max(p => p.Order) + 1;
+                }
+
                 foreach (var photoId in photoIds)
                 {
-                    if (gallery.Fotky.Any(f => f.Id == photoId))
+                    if (gallery.Photos.Any(f => f.Id == photoId))
                     {
                         continue;
                     }
                     
                     var photo = FotkaManager.GetFotka(photoId);
-                    gallery.Fotky.Add(photo);
+                    gallery.Photos.Add(new GalleryPhoto(photo, maxOrder));
+                    maxOrder = maxOrder + 1;
                 }
 
                 Save(gallery);

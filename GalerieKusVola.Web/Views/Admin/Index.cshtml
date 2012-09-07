@@ -1,12 +1,13 @@
-﻿@model GalerieKusVola.ViewModels.AdminVM
+﻿@using MongoDB.Bson
+@model GalerieKusVola.Core.ViewModels.AdminVM
 
 <h2>Adminsitrace galerií</h2>
 
-@if(Model.Galerie != null && Model.Galerie.Count > 0)
+@if(Model.Galleries != null && Model.Galleries.Count > 0)
 {
-    var rootGallery = Model.Galerie.First(g => g.ParentId == null || g.ParentId == "000000000000000000000000");
+    var rootGallery = Model.Galleries.First(g => g.ParentId == ObjectId.Empty);
     
-    <p>@rootGallery.Nazev (<a href="/admin/GalleryEdit/@rootGallery.Id">edit</a>)</p>
+    <p>@rootGallery.Name (<a href="/admin/GalleryEdit/@rootGallery.Id">edit</a>)</p>
     
     @Html.Action("GalleryLeaf", "GalleryLeaf", new { area = "Partials", leafId = rootGallery.Id })
 }
@@ -16,14 +17,14 @@
 <hr />
 <h2>Administrace typů fotek</h2>
 
-@if(Model.TypyFotek != null && Model.TypyFotek.Count > 0)
+@if(Model.PhotoTypes != null && Model.PhotoTypes.Count > 0)
 {
     <ul>
-        @foreach (var typ in Model.TypyFotek)
+        @foreach (var type in Model.PhotoTypes)
         {
             <li>
-                @typ.JmenoTypu
-                &nbsp; <a href="/Admin/PhotoTypeEdit/@typ.Id">editovat</a>
+                @type.Name
+                &nbsp; <a href="/Admin/PhotoTypeEdit/@type.Id">editovat</a>
             </li>
         }
     </ul>

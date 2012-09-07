@@ -1,4 +1,5 @@
-﻿@model GalerieKusVola.ViewModels.ProcessUploadedPhotosVM
+﻿@using MongoDB.Bson
+@model GalerieKusVola.Core.ViewModels.ProcessUploadedPhotosVM
 
 @section scripts
 {
@@ -38,9 +39,9 @@
         }
         
         function updateCounter(galleryId, count) {
-            $("#gal-newCounter-" + galleryId).empty().html(count);
+            var existingCount = $("#gal-newCounter-" + galleryId).html();
+            $("#gal-newCounter-" + galleryId).empty().html(parseInt(existingCount) + count);
         }
-        
         
         function checkIfPhotoAlreadyIn(destHidden, photoName) {
             var photosIn = destHidden.attr("value");
@@ -184,9 +185,9 @@
         <form method="POST" action="/admin/ProcessUploadedPhotosCustom">
             @if (Model.Galleries != null && Model.Galleries.Count > 0)
             {
-                var rootGallery = Model.Galleries.First(g => g.ParentId == null || g.ParentId == "000000000000000000000000");
+                var rootGallery = Model.Galleries.First(g => g.ParentId == ObjectId.Empty);
     
-                <p><strong>@rootGallery.Nazev</strong></p>
+                <p><strong>@rootGallery.Name</strong></p>
     
                 @Html.Action("GalleryLeafDroppable", "GalleryLeaf", new { area = "Partials", leafId = rootGallery.Id })
             }
