@@ -21,6 +21,7 @@ namespace GalerieKusVola.Core.DomainModel
         public string Description { get; set; }
         public DateTime DateCreated { get; set; }
         public int Order { get; set; }
+        public bool IsTrashGallery { get; set; }
 
         public List<GalleryPhoto> Photos { get; set; }
         public List<GalleryPhoto> PreviewPhotos { get; set; }

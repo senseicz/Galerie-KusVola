@@ -9,6 +9,7 @@ using GalerieKusVola.Core.Utils;
 using GalerieKusVola.Core.ViewModels;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver.Linq;
 
 
 namespace GalerieKusVola.Core.Managers
@@ -35,6 +36,22 @@ namespace GalerieKusVola.Core.Managers
         public Photo GetPhotoByFileName(string fileName)
         {
             return _photos.Collection.FindOne(Query.EQ("FileName", fileName));
+        }
+
+        public void MovePhotoSiblingsToTrash(User owner)
+        {
+            var photos = _photos.Collection.FindAll();
+            if(photos != null && photos.Any())
+            {
+                var galleryManager = new GalleryManager();
+                var trashGallery = galleryManager.GetTrashGallery(owner);
+                var siblings = (from photo in photos where !galleryManager.IsPhotoInGallery(photo.Id) select photo.Id.ToString()).ToList();
+
+                if (siblings.Count > 0)
+                {
+                    galleryManager.AddPhotosToGallery(trashGallery.Id.ToString(), siblings.ToArray());
+                }
+            }
         }
 
         public void Save(Photo photo)

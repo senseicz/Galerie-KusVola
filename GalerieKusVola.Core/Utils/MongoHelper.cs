@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace GalerieKusVola.Core.Utils
 {

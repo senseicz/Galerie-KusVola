@@ -5,6 +5,7 @@ using GalerieKusVola.Core.DomainModel;
 using GalerieKusVola.Core.Utils;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver.Linq;
 
 namespace GalerieKusVola.Core.Managers
 {
@@ -32,6 +33,32 @@ namespace GalerieKusVola.Core.Managers
             return _galleries.Collection.FindOneById(id);
         }
 
+        public Gallery GetRootGallery(User owner)
+        {
+            return _galleries.Collection.AsQueryable().First(g => g.OwnerId == owner.Id && !g.IsTrashGallery && g.ParentId == ObjectId.Empty); 
+        }
+
+        public Gallery GetTrashGallery(User owner)
+        {
+            return _galleries.Collection.AsQueryable().First(g => g.OwnerId == owner.Id && g.IsTrashGallery);
+        }
+
+        public List<Gallery> GetGalleryChildrens(string parentGallery)
+        {
+            return _galleries.Collection.AsQueryable().Where(g => g.ParentId == new ObjectId(parentGallery)).OrderBy(g => g.Order).ToList();
+        }
+
+        public Gallery ClearTrashGallery(User owner)
+        {
+            var trash = GetTrashGallery(owner);
+            if(trash != null && trash.Photos != null && trash.Photos.Any())
+            {
+                trash.Photos.Clear();
+                Save(trash);
+            }
+
+            return trash;
+        }
 
         public List<Gallery> Find(string keyword)
         {
@@ -51,27 +78,51 @@ namespace GalerieKusVola.Core.Managers
 
         public bool IsRootGalleryExistForUser(User owner)
         {
-            var gallery = _galleries.Collection.FindOne(Query.EQ("OwnerId", owner.Id));
-            return gallery != null;
+            return _galleries.Collection.AsQueryable().Any(g => g.OwnerId == owner.Id && g.ParentId == ObjectId.Empty);
         }
 
-        public void CreateRootGallery(User owner)
+        public bool IsTrashGalleryExistForUser(User owner)
         {
+            return _galleries.Collection.AsQueryable().Any(g => g.OwnerId == owner.Id && g.IsTrashGallery);
+        }
+
+        public bool IsPhotoInGallery(ObjectId photoId)
+        {
+            return _galleries.Collection.AsQueryable().Any(g => g.Photos.Any(p => p.Id == photoId));
+        }
+
+        public void CreateRootGallery(User owner, bool isTrashGallery)
+        {
+            string galleryName;
+            string galleryDescription;
+
+            if(isTrashGallery)
+            {
+                galleryName = "Trash";
+                galleryDescription = "Use for photos that does not belong to any gallery";
+            }
+            else
+            {
+                galleryName = "Root gallery";
+                galleryDescription = "Root gallery for user, cannot be deleted.";
+            }
+
             var gal = new Gallery
                 {
                     DateCreated = DateTime.Now,
                     ParentId = ObjectId.Empty,
                     OwnerId = owner.Id,
-                    Name = "Root gallery",
-                    Description = "Root gallery for user, cannot be deleted.",
-                    Order = 1
+                    Name = galleryName,
+                    Description = galleryDescription,
+                    Order = 1,
+                    IsTrashGallery = isTrashGallery
                 };
             Save(gal);
         }
 
-        public List<Gallery> GetGalerieForUser(ObjectId userId)
+        public List<Gallery> GetGalerieForUser(User owner)
         {
-            return _galleries.Collection.Find(Query.EQ("OwnerId", userId)).ToList();
+            return _galleries.Collection.Find(Query.EQ("OwnerId", owner.Id)).ToList();
         }
 
         public void Save(Gallery gallery)
@@ -95,7 +146,7 @@ namespace GalerieKusVola.Core.Managers
                 {
                     gallery.Photos = new List<GalleryPhoto>();
                 }
-                else
+                else if(gallery.Photos.Count > 0)
                 {
                     maxOrder = gallery.Photos.Max(p => p.Order) + 1;
                 }

@@ -37,6 +37,11 @@ namespace GalerieKusVola.Core.Managers
             return _users.Collection.FindOne(Query.EQ("Email", email));
         }
 
+        public User GetBySeoName(string seoName)
+        {
+            return _users.Collection.FindOne(Query.EQ("UserNameSEO", seoName));
+        }
+
         public void Save(User user)
         {
             _users.Collection.Save(user);
@@ -53,7 +58,6 @@ namespace GalerieKusVola.Core.Managers
             var newUser = new User { Email = regModel.Email, PasswordCrypted = cryptedPassword, UserName = regModel.Name };
             Save(newUser);
             return newUser;
-            //GalleryManager.CreateRootGallery(newUser);
         }
 
         public bool IsEmailTaken(string email)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 using GalerieKusVola.Core.DomainModel;
+using System.Linq;
+using MongoDB.Bson;
 
 namespace GalerieKusVola.Core.ViewModels
 {
@@ -11,7 +13,7 @@ namespace GalerieKusVola.Core.ViewModels
         public string OKMessage { get; set; }
         public string ErrorMessage { get; set; }
     }
-    
+
     public class Register : BaseViewModel
     {
         [Required]
@@ -35,7 +37,7 @@ namespace GalerieKusVola.Core.ViewModels
     public class GalleryEdit : BaseViewModel
     {
         public string GalleryId { get; set; }
-        
+
         [Required]
         public string Name { get; set; }
 
@@ -52,7 +54,50 @@ namespace GalerieKusVola.Core.ViewModels
 
         public List<GalleryPhoto> Photos { get; set; }
         public List<Diary> Diaries { get; set; }
-        public List<GalleryPhoto> PreviewPhotos { get; set; } 
+        public List<GalleryPhoto> PreviewPhotos { get; set; }
+        public List<GalleryPhoto> TrashPhotos { get; set; }
+
+        public string PreviewPhotoIds
+        {
+            get
+            {
+                var retString = "";
+                if (PreviewPhotos != null && PreviewPhotos.Count > 0)
+                {
+                    retString = PreviewPhotos.OrderBy(p => p.Order).Aggregate(retString, (current, photo) => current + photo.Id.ToString() + ",");
+                }
+
+                return retString.TrimEnd(new []{','});
+            }
+        }
+
+        public string PhotoIds
+        {
+            get
+            {
+                var retString = "";
+                if (Photos != null && Photos.Count > 0)
+                {
+                    retString = Photos.OrderBy(p => p.Order).Aggregate(retString, (current, photo) => current + photo.Id.ToString() + ",");
+                }
+
+                return retString.TrimEnd(new[] { ',' }); 
+            }
+        }
+
+        public string TrashPhotoIds
+        {
+            get
+            {
+                var retString = "";
+                if (TrashPhotos != null && TrashPhotos.Count > 0)
+                {
+                    retString = TrashPhotos.OrderBy(p => p.Order).Aggregate(retString, (current, photo) => current + photo.Id.ToString() + ",");
+                }
+
+                return retString.TrimEnd(new[] { ',' });
+            }
+        }
     }
 
     public class PhotoTypeEdit : BaseViewModel
@@ -78,12 +123,13 @@ namespace GalerieKusVola.Core.ViewModels
     {
         public List<Gallery> Galleries { get; set; }
         public List<PhotoType> PhotoTypes { get; set; }
+        public Gallery Trash { get; set; }
     }
 
     public class ProcessUploadedPhotosVM
     {
         public List<OrigPhotosWaiting> PhotosWaiting { get; set; }
-        public List<Gallery> Galleries { get; set; } 
+        public List<Gallery> Galleries { get; set; }
     }
 
     public class OrigPhotosWaiting

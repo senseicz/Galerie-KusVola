@@ -1,0 +1,77 @@
+﻿@model GalerieKusVola.Core.ViewModels.UserGallery.IndexVM
+
+@{
+    var mainPhotoStyle = "";
+    if(Model.HasSomePreviewImage)
+    {
+        mainPhotoStyle = string.Format("style=\"background-image: url('{0}')\"", Model.FirstPreviewUrl);
+    }
+}
+
+@section scripts
+{
+    <script type="text/javascript">
+        var galData = @Html.Raw(Model.GalleryCyclerJson);
+        
+        function getImages(galleryName) {
+            for(var i=0;i<galData.length; i++) {
+                if(galData[i].Name == galleryName) {
+                    return galData[i].Images;
+                }
+            }
+            return null;
+        }
+
+        function switchBackground(imageUrl) {
+            $(".mainPhoto").attr("style", "background-image: url('" + imageUrl + "')");
+        }
+
+        function setNextBGImage() {
+            var rootImages = getImages("root");
+            if(rootImages.length > 0) {
+
+                var nextImagePos = 0;
+                var imagePos = rootImages.indexOf(currentBGImage);
+
+                if( imagePos > -1) {
+                    if(imagePos < rootImages.length - 1) {
+                        nextImagePos = imagePos + 1;  
+                    }
+                }
+
+                switchBackground(rootImages[nextImagePos]);
+                currentBGImage = rootImages[nextImagePos];
+            }
+        }
+
+        var currentBGImage = @Html.Raw(string.Format("'{0}'", Model.FirstPreviewUrl));
+        var interval;
+
+        $(function() {
+            interval = setInterval(function() {setNextBGImage();}, 5000); 
+        });
+
+    </script>
+}
+
+<div class="mainPhoto" @Html.Raw(mainPhotoStyle)>
+    <div class="mainPhotoHeader">
+        @Model.RootGallery.Name
+    </div>
+    
+    @if(Model.RootGalleryChildrens != null && Model.RootGalleryChildrens.Count > 0)
+    {
+        foreach (var child in Model.RootGalleryChildrens)
+        {
+            <div class="galleryName" data-galleryId="@child.Id">
+                @child.Name
+            </div>
+            <div class="cleaner"></div>
+        }
+    }
+    
+    <div class="mainPhotoUserEmail">
+        tonda@tonda.cz
+    </div>
+</div>
+

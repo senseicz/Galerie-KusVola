@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
+using GalerieKusVola.Core.ViewModels.Home;
 
 namespace GalerieKusVola.Web.Controllers
 {
     public class HomeController : BaseController
     {
-        //
-        // GET: /Home/
-
         public ActionResult Index()
         {
-            return View();
+            var retModel = new Index();
+            retModel.Users = _userManager.GetAll().OrderBy(u => u.UserNameSEO).ToList();
+            return View(retModel);
         }
 
     }

@@ -17,7 +17,7 @@ namespace GalerieKusVola.Web.Areas.Partials.Controllers
         
         public ActionResult GalleryLeaf(string leafId)
         {
-            var gals = _galleryManager.GetGalerieForUser(CurrentUser.Id);
+            var gals = _galleryManager.GetGalerieForUser(CurrentUser);
 
             if(gals != null && gals.Count > 0 && gals.Any(g => g.ParentId.ToString() == leafId))
             {
@@ -30,7 +30,7 @@ namespace GalerieKusVola.Web.Areas.Partials.Controllers
 
         public ActionResult GalleryLeafDroppable(string leafId)
         {
-            var gals = _galleryManager.GetGalerieForUser(CurrentUser.Id);
+            var gals = _galleryManager.GetGalerieForUser(CurrentUser);
 
             if (gals != null && gals.Count > 0 && gals.Any(g => g.ParentId.ToString() == leafId))
             {

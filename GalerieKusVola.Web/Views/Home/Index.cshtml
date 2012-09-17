@@ -1,6 +1,6 @@
-﻿@{
-    ViewBag.Title = "Index";
-}
+﻿@model GalerieKusVola.Core.ViewModels.Home.Index
 
-<h2>Index</h2>
- 
+@foreach(var user in Model.Users)
+{
+    <a href="/@user.UserNameSEO/gallery">@user.UserName</a>
+}

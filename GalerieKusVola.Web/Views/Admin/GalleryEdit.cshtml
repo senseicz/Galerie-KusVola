@@ -1,13 +1,255 @@
 ﻿@using MongoDB.Bson
 @model GalerieKusVola.Core.ViewModels.GalleryEdit
 
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
 @section scripts
 {
     @Scripts.Render("~/bundles/jqueryui")
     @Styles.Render("~/Content/themes/base/css")
 
     <script>
+        function updateSorter(ulElemName) {
+            var sortedString = '';
+            $("#" + ulElemName + " li").each(function () {
+                sortedString += $(this).attr('data-photoId') + ',';
+            });
+
+            if (ulElemName == "photos") {
+                $("#hdnPhotos").val(sortedString);
+            }
+
+            if (ulElemName == "preview-photos") {
+                $("#hdnPreviewPhotos").val(sortedString);
+            }
+        }
+
+        function checkIfPhotoAlreadyIn(destHidden, photoName) {
+            var photosIn = destHidden.attr("value");
+
+            if (photosIn.indexOf(photoName) >= 0) {
+                return true;
+            }
+            return false;
+        }
         
+        function GetPreviewPhotoCount() {
+            var hdnPreview = $("#hdnPreviewPhotos");
+            var vals = hdnPreview.val().split(",");
+            return vals.length;
+        }
+
+        function CreatePhotoLi(targetContainerId, photoId) {
+            var targetContainer = $("#" + targetContainerId);
+            if (targetContainer) {
+                $.getJSON('/admin/GetPhotoThumb/' + photoId, function (data) {
+                    var li = '<li class="ui-widget-content" data-photoId="' + data.id + '"><img src="' + data.path + '" /></li>';
+                    targetContainer.append(li);
+                });
+            }
+        }
+        
+        function DeletePhotoLi(targetContainerId) {
+            var targetContainer = $("#" + targetContainerId + " li");
+            if (targetContainer) {
+                targetContainer.remove(".ui-selected");
+            }
+        }
+        
+        function GetGalleryThumbs(galleryId, targetContainerId) {
+            var targetContainer = $("#" + targetContainerId);
+            if (targetContainer) {
+                $.getJSON('/admin/getgallerythumbs/' + galleryId, function (data) {
+                    $.each(data, function (i, item) {
+                        var li = '<li class="ui-widget-content" data-photoId="' + item.Id + '"><img src="' + item.Path + '" /></li>';
+                        targetContainer.append(li);
+                    });
+                });
+            }
+        }
+        
+        function ClearThumbs(targetContainerId) {
+            var targetContainer = $("#" + targetContainerId);
+            if (targetContainer) {
+                targetContainer.empty();
+            }
+        }
+
+        var previewSelected;
+        var gallerySelected;
+        var trashSelected;
+
+        //READY:
+        $(function () {
+            $("#preview-photos").selectable({
+                stop: function () {
+                    previewSelected = $(".ui-selected", this);
+
+                    var btnRemFromPreview = $("#btnRemoveFromPreview");
+                    if (previewSelected.length > 1) {
+                        if (btnRemFromPreview.attr("disabled")) {
+                            btnRemFromPreview.removeAttr("disabled");
+                        }
+                    } else {
+                        if(!btnRemFromPreview.attr("disabled")) {
+                            btnRemFromPreview.attr("disabled", "disabled");
+                        }
+                    }
+                }
+            });
+            
+            $("#photos").selectable({
+                stop: function () {
+                    gallerySelected = $(".ui-selected", this);
+
+                    var btnAddToPreview = $("#btnAddToPreview");
+                    var btnRemoveFromGallery = $("#btnRemoveFromGallery");
+                    
+                    if (gallerySelected.length > 1) {
+                        if (GetPreviewPhotoCount() < 5 && btnAddToPreview.attr("disabled")) {
+                            btnAddToPreview.removeAttr("disabled");
+                        }
+                        
+                        if(btnRemoveFromGallery.attr("disabled")) {
+                            btnRemoveFromGallery.removeAttr("disabled");
+                        }
+                    } else {
+                        if (!btnAddToPreview.attr("disabled")) {
+                            btnAddToPreview.attr("disabled", "disabled");
+                        }
+                        
+                        if(!btnRemoveFromGallery.attr("disabled")) {
+                            btnRemoveFromGallery.attr("disabled", "disabled");
+                        }
+                    }
+                }
+            });
+            
+            $("#trash").selectable({
+                stop: function () {
+                    trashSelected = $(".ui-selected", this);
+
+                    var btnAddToGallery = $("#btnAddToGallery");
+                    if (trashSelected.length > 1) {
+                        if (btnAddToGallery.attr("disabled")) {
+                            btnAddToGallery.removeAttr("disabled");
+                        }
+                    } else {
+                        if (!btnAddToGallery.attr("disabled")) {
+                            btnAddToGallery.attr("disabled", "disabled");
+                        }
+                    }
+                }
+            });
+
+            $("#btnRemoveFromPreview").click(function() {
+                var hdnPreview = $("#hdnPreviewPhotos");
+                var vals = hdnPreview.val().split(",");
+
+                previewSelected.each(function () {
+                    var photoId = $(this).attr("data-photoId");
+                    if (photoId) {
+                        if (vals.indexOf(photoId) > -1) {
+                            vals.splice(vals.indexOf(photoId), 1);
+                        }
+                    }
+                });
+                DeletePhotoLi("preview-photos");
+
+                hdnPreview.val(vals.toString());
+                $("#hdnPreviewPhotosShadow").val(vals.toString());
+                $(this).attr("disabled", "disabled");
+            });
+
+            $("#btnAddToPreview").click(function () {
+                var hdnPreview = $("#hdnPreviewPhotos");
+                var vals = hdnPreview.val().split(",");
+
+                gallerySelected.each(function () {
+                    var photoId = $(this).attr("data-photoId");
+                    if (photoId) {
+                        if (vals.indexOf(photoId) < 0 && vals.length < 5) {
+                            vals.push(photoId);
+                            CreatePhotoLi("preview-photos", photoId);
+                        }
+                    }
+                    $(this).removeClass("ui-selected");
+                });
+                hdnPreview.val(vals.toString());
+                $("#hdnPreviewPhotosShadow").val(vals.toString());
+                $(this).attr("disabled", "disabled");
+            });
+
+
+            $("#btnRemoveFromGallery").click(function () {
+                var hdnPhotos = $("#hdnPhotos");
+                var photoVals = hdnPhotos.val().split(",");
+                var hdnTrash = $("#hdnTrash");
+                var trashVals = hdnTrash.val().split(",");
+
+                gallerySelected.each(function () {
+                    var photoId = $(this).attr("data-photoId");
+                    if (photoId) {
+                        if (trashVals.indexOf(photoId) < 0) {
+                            //add to trash
+                            trashVals.push(photoId);
+                            CreatePhotoLi("trash", photoId);
+
+                            //remove from photos
+                            photoVals.splice(photoVals.indexOf(photoId), 1);
+                        }
+                    }
+                });
+                DeletePhotoLi("photos");
+
+                hdnPhotos.val(photoVals.toString());
+                hdnTrash.val(trashVals.toString());
+
+                $("#hdnPhotosShadow").val(photoVals.toString());
+                $("#hdnTrashShadow").val(trashVals.toString());
+                $(this).attr("disabled", "disabled");
+            });
+
+            $("#btnAddToGallery").click(function () {
+                var hdnPhotos = $("#hdnPhotos");
+                var photoVals = hdnPhotos.val().split(",");
+                var hdnTrash = $("#hdnTrash");
+                var trashVals = hdnTrash.val().split(",");
+                
+                trashSelected.each(function () {
+                    var photoId = $(this).attr("data-photoId");
+                    if (photoId) {
+                        if (photoVals.indexOf(photoId) < 0) {
+                            //add to photos
+                            photoVals.push(photoId);
+                            CreatePhotoLi("photos", photoId);
+                            
+                            //removeFromTrash
+                            trashVals.splice(trashVals.indexOf(photoId), 1);
+                        }
+                    }
+                });
+                DeletePhotoLi("trash");
+
+                hdnPhotos.val(photoVals.toString());
+                hdnTrash.val(trashVals.toString());
+                
+                $("#hdnPhotosShadow").val(photoVals.toString());
+                $("#hdnTrashShadow").val(trashVals.toString());
+                $(this).attr("disabled", "disabled");
+            });
+
+            $("#galId").change(function () {
+                var galleryId = $(this).find(":selected").attr("value");
+                if (galleryId && galleryId.length > 0) {
+                    ClearThumbs("photos");
+                    GetGalleryThumbs(galleryId, "photos");
+                }
+            });
+        });
+
     </script>
 }
 
@@ -27,62 +269,144 @@
 
 @if (string.IsNullOrEmpty(Model.OKMessage))
 {
-    using (Html.BeginForm("GalleryEdit"))
+    using (Html.BeginForm("GalleryEdit", "Admin"))
     {
         @Html.HiddenFor(r => r.GalleryId)
-        <p>
-            Název galerie:  @Html.TextBoxFor(r => r.Name)
-        </p>
-        <p>
-            Popis:  @Html.TextBoxFor(r => r.Description)
-        </p>
-        <p>
-            Pořadí: @Html.TextBoxFor(r => r.Order)
-        </p>
+        <div class="inputRow">
+            <span class="inputField">Název galerie:  @Html.TextBoxFor(r => r.Name)</span>
+            <span class="inputField">Popis:  @Html.TextBoxFor(r => r.Description) </span>
+            <span class="inputField w20">Pořadí: @Html.TextBoxFor(r => r.Order) </span>
+        </div>
 
         if (Model.GalleryId == null || Model.ParentGalleryId != ObjectId.Empty.ToString())
         {
-        <p>
-            Rodičovská galerie: @Html.DropDownList("ParentGalleryId", Model.GalleryList, "---Vyberte rodičovskou galerii")
-        </p>
+            <div class="inputRow">
+                <span class="inputField">Rodičovská galerie: @Html.DropDownList("ParentGalleryId", Model.GalleryList, "---Vyberte rodičovskou galerii") </span>
+            </div>
         }
         else
         {
-        <input type="hidden" name="ParentGalleryId" value="0" />
+            <input type="hidden" name="ParentGalleryId" value="0" />
         }
-
-        <hr />
+        
+        <input type="hidden" id="hdnPreviewPhotosShadow" name="hdnPreviewPhotosShadow" value="@Model.PreviewPhotoIds"/>
+        <input type="hidden" id="hdnPhotosShadow" name="hdnPhotosShadow" value="@Model.PhotoIds"/>
+        <input type="hidden" id="hdnTrashShadow" name="hdnTrashShadow" value="@Model.PhotoIds"/>
     
-        if (Model.Photos != null && Model.Photos.Count > 0)
-        {
-            <h2>Preview fotky (max. 5)</h2>
-            <div class="container-w800">
-                <ul id="photos" class="photos ui-helper-reset ui-helper-clearfix">
-                @foreach (var photo in Model.Photos.OrderBy(p => p.Order))
-                {
-                    <li class="ui-widget-content ui-corner-tr" data-photoId="@photo.Id">
-                        <img src='@photo.GetPhotoUrl("minithumb")'/>
-                    </li>
-                }
-                </ul>
-            </div>
-
-            <div class="fc18"></div>    
-                
-            <h2>Fotky v galerii</h2>
-            <div class="container-w800">
-                <ul id="photos" class="photos ui-helper-reset ui-helper-clearfix">
-                @foreach (var photo in Model.Photos.OrderBy(p => p.Order))
-                {
-                    <li class="ui-widget-content ui-corner-tr" data-photoId="@photo.Id">
-                        <img src='@photo.GetPhotoUrl("minithumb")'/>
-                    </li>
-                }
-                </ul>
-            </div>
-        }
-
-        <div class="cleaner"></div>        
-        <input type="submit" name="btnSubmit" id="SubmitButton" value="Uložit změny" />
+        <div class="inputRow">
+            <input type="submit" name="btnSubmit" id="SubmitButton" value="Uložit základní změny" />
+        </div>
     }
+    
+    
+    if (!string.IsNullOrEmpty(Model.GalleryId))
+    {
+         <hr />
+
+         using (Html.BeginForm("GalleryEditCustom", "Admin"))
+         {
+             @Html.HiddenFor(r => r.GalleryId)
+             <div class="two-cols">
+
+                 <div class="col1">
+                     <h2>Preview fotky (max. 5)</h2>
+                     <input type="hidden" id="hdnPreviewPhotos" name="hdnPreviewPhotos" value="@Model.PreviewPhotoIds"/>
+
+                     <div class="container-h80">
+                         <ul id="preview-photos" class="photoContainer ui-helper-reset ui-helper-clearfix">
+                             @if (Model.PreviewPhotos != null && Model.PreviewPhotos.Count > 0)
+                             {
+                                 foreach (var photo in Model.PreviewPhotos.OrderBy(p => p.Order))
+                                 {
+                                     <li class="ui-widget-content" data-photoId="@photo.Id">
+                                         <img src='@photo.GetPhotoUrl("minithumb")'/>
+                                     </li>
+                                 }
+                             }
+                         </ul>
+                     </div>
+                     <div class="cleaner"></div>
+                     <div>
+                         <input type="button" id="btnPreviewMoveUp" value="<-" disabled="disabled"/>
+                         <input type="button" id="btnPreviewMoveDown" value="->" disabled="disabled"/>
+                         <input type="button" id="btnRemoveFromPreview" value="Označné vyřadit z náhledů" disabled="disabled"/>
+                     </div>
+            
+                     <div class="fc18"></div>
+                     
+                     @*standard gallery edit*@
+                     @if (Model.ParentGalleryId != ObjectId.Empty.ToString()) 
+                     {
+                         <h2>Fotky v galerii</h2>
+                         <input type="hidden" id="hdnPhotos" name="hdnPhotos" value="@Model.PhotoIds"/>
+
+                         <div>
+                             <input type="button" id="btnPreviewMoveUp" value="<-" disabled="disabled"/>
+                             <input type="button" id="btnPreviewMoveDown" value="->" disabled="disabled"/>
+                             <input type="button" id="btnAddToPreview" value="Označené přiřadit do náhledů" disabled="disabled"/>
+                             <input type="button" id="btnRemoveFromGallery" value="Označné hodit do koše" disabled="disabled"/>
+                         </div>
+                         <div class="cleaner"></div>
+                         <div class="container">
+                             <ul id="photos" class="photoContainer ui-helper-reset ui-helper-clearfix">
+                                 @if (Model.Photos != null && Model.Photos.Count > 0)
+                                 {
+                                     foreach (var photo in Model.Photos.OrderBy(p => p.Order))
+                                     {
+                                         <li class="ui-widget-content" data-photoId="@photo.Id">
+                                             <img src='@photo.GetPhotoUrl("minithumb")'/>
+                                         </li>
+                                     }
+                                 }
+                             </ul>
+                         </div>
+                     }
+                     else
+                     {
+                         <div class="inputRow">
+                             <span class="inputField">Vyberte galerii: @Html.DropDownList("galId", Model.GalleryList, "---Vyberte galerii") </span>
+                         </div>
+                         
+                         <div>
+                             <input type="button" id="btnAddToPreview" value="Označené přiřadit do náhledů" disabled="disabled"/>
+                         </div>
+                         <div class="cleaner"></div>
+                         <div class="container">
+                             <ul id="photos" class="photoContainer ui-helper-reset ui-helper-clearfix"></ul>
+                         </div>
+                     }
+                 </div>
+
+                 <div class="col2">
+                     <h2>Koš</h2>    
+                     <input type="hidden" id="hdnTrash" name="hdnTrash" value="@Model.TrashPhotoIds"/>
+                     
+                     <div>
+                         <input type="button" id="btnAddToGallery" value="Označné přesunout z koše do galerie" disabled="disabled"/>
+                     </div>
+                     <div class="cleaner"></div>
+
+                     <div class="container-w330">
+                         <ul id="trash" class="photoContainer ui-helper-reset ui-helper-clearfix">
+                                    
+                             @if (Model.TrashPhotos != null && Model.TrashPhotos.Count > 0)
+                             {
+                                 foreach (var photo in Model.TrashPhotos.OrderBy(p => p.Order))
+                                 {
+                                     <li class="ui-widget-content" data-photoId="@photo.Id">
+                                         <img src='@photo.GetPhotoUrl("minithumb")'/>
+                                     </li>
+                                 }
+                             }
+                         </ul>
+                     </div>
+                 </div>
+             </div>
+             <div class="cleaner"></div>
+             <input type="submit" name="btnSubmit" id="SubmitButton" value="Uložit změny" />
+         }
+     }
 }
+
+
+

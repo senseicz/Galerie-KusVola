@@ -12,6 +12,7 @@ using MongoDB.Bson;
 
 namespace GalerieKusVola.Web.Controllers
 {
+    [LayoutInjecter("_LayoutAdmin")]
     public class AdminController : BaseController
     {
         private readonly GalleryManager _galleryManager ;
@@ -40,8 +41,17 @@ namespace GalerieKusVola.Web.Controllers
             var rootGalExist = _galleryManager.IsRootGalleryExistForUser(CurrentUser);
             if(!rootGalExist)
             {
-                _galleryManager.CreateRootGallery(CurrentUser);
+                _galleryManager.CreateRootGallery(CurrentUser, false);
             }
+
+            //make sure Root gallery exists for current user
+            var trashGalExist = _galleryManager.IsTrashGalleryExistForUser(CurrentUser);
+            if (!trashGalExist)
+            {
+                _galleryManager.CreateRootGallery(CurrentUser, true);
+            }
+
+            //_photoManager.MovePhotoSiblingsToTrash(CurrentUser);
         }
         
         #region Register
@@ -141,9 +151,10 @@ namespace GalerieKusVola.Web.Controllers
             AdminBootstrapper();
 
 
-            var galleries = _galleryManager.GetGalerieForUser(CurrentUser.Id);
+            var galleries = _galleryManager.GetGalerieForUser(CurrentUser);
             var photoTypes = _photoTypeManager.GetAll();
-            var retModel = new AdminVM {Galleries= galleries, PhotoTypes = photoTypes};
+            var trash = _galleryManager.GetTrashGallery(CurrentUser);
+            var retModel = new AdminVM {Galleries= galleries, PhotoTypes = photoTypes, Trash = trash};
 
             return View(retModel);
         }
@@ -153,7 +164,7 @@ namespace GalerieKusVola.Web.Controllers
         public ActionResult ProcessUploadedPhotos()
         {
             var photosWaiting = _photoManager.GetWaitingPhotos(CurrentUser);
-            var userGalleries = _galleryManager.GetGalerieForUser(CurrentUser.Id);
+            var userGalleries = _galleryManager.GetGalerieForUser(CurrentUser);
 
             var retModel = new ProcessUploadedPhotosVM{Galleries = userGalleries, PhotosWaiting = photosWaiting};
 
@@ -210,7 +221,8 @@ namespace GalerieKusVola.Web.Controllers
                         Order = gal.Order,
                         Diaries = gal.Diaries,
                         Photos = gal.Photos,
-                        PreviewPhotos = gal.PreviewPhotos
+                        PreviewPhotos = gal.PreviewPhotos,
+                        TrashPhotos = _galleryManager.GetTrashGallery(CurrentUser).Photos 
                     };
             }
             else
@@ -220,7 +232,6 @@ namespace GalerieKusVola.Web.Controllers
 
             return View(retModel);
         }
-
 
         private SelectList GetGallerySelectList(string selectedGalleryId, string editedGalleryId)
         {
@@ -245,7 +256,7 @@ namespace GalerieKusVola.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult GalleryEdit(GalleryEdit galEdit)
+        public ActionResult GalleryEdit(GalleryEdit galEdit, string hdnPreviewPhotosShadow, string hdnPhotosShadow, string hdnTrashShadow)
         {
             if (ModelState.IsValid)
             {
@@ -264,14 +275,17 @@ namespace GalerieKusVola.Web.Controllers
                     if(!string.IsNullOrEmpty(galEdit.GalleryId)) //UPDATE
                     {
                         gal.Id = ObjectId.Parse(galEdit.GalleryId);
+
+                        gal = ProcessGalleryPhotos(gal, hdnPreviewPhotosShadow, hdnPhotosShadow, hdnTrashShadow);
+
                         _galleryManager.Save(gal);
-                        galEdit.OKMessage = "Update typu proběhl úspěšně.";
+                        galEdit.OKMessage = string.Format("Update galerie {0} proběhl úspěšně.", gal.Name);
                     }
                     else //INSERT
                     {
                         gal.OwnerId = CurrentUser.Id;
                         _galleryManager.Save(gal);
-                        galEdit.OKMessage = "Uložení nové galerie proběhlo úspěšně.";
+                        galEdit.OKMessage = string.Format("Uložení nové galerie {0} proběhlo úspěšně.", gal.Name);
                     }
                 }
                 catch (Exception ex)
@@ -287,6 +301,95 @@ namespace GalerieKusVola.Web.Controllers
             return View(galEdit);
         }
 
+        [HttpPost]
+        public ActionResult GalleryEditCustom(string GalleryId, string hdnPreviewPhotos, string hdnPhotos, string hdnTrash)
+        {
+            var gallery = _galleryManager.GetById(GalleryId);
+
+            gallery = ProcessGalleryPhotos(gallery, hdnPreviewPhotos, hdnPhotos, hdnTrash);
+            _galleryManager.Save(gallery);
+
+            return RedirectToAction("GalleryEdit", new {Id = GalleryId});
+        }
+
+        private Gallery ProcessGalleryPhotos(Gallery gallery, string previewPhotos, string photos, string trash)
+        {
+            var previewPhotosList = new List<GalleryPhoto>();
+            var photosList = new List<GalleryPhoto>();
+            var separator = new[] { ',' };
+
+            if (!string.IsNullOrEmpty(previewPhotos) && previewPhotos.Length > 1)
+            {
+                previewPhotos = previewPhotos.Trim(separator);
+                var previewPhotosArr = previewPhotos.Split(new[] { ',' });
+
+                for (int i = 0; i < previewPhotosArr.Length; i++)
+                {
+                    var photo = _photoManager.GetPhoto(previewPhotosArr[i]);
+                    if (photo != null)
+                    {
+                        previewPhotosList.Add(new GalleryPhoto(photo, i + 1));
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(photos) && photos.Length > 1)
+            {
+                photos = photos.Trim(separator);
+                var photosArr = photos.Split(new[] { ',' });
+
+                for (int i = 0; i < photosArr.Length; i++)
+                {
+                    var photo = _photoManager.GetPhoto(photosArr[i]);
+                    if (photo != null)
+                    {
+                        photosList.Add(new GalleryPhoto(photo, i + 1));
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(trash) && trash.Length > 1)
+            {
+                trash = trash.Trim(separator);
+                var trashArr = trash.Split(new[] { ',' });
+
+                if(trashArr.Length > 0)
+                {
+                    var trashGal = _galleryManager.ClearTrashGallery(CurrentUser);
+                    _galleryManager.AddPhotosToGallery(trashGal.Id.ToString(), trashArr);
+                }
+            }
+
+            gallery.Photos = photosList;
+            gallery.PreviewPhotos = previewPhotosList;
+
+            return gallery;
+        }
+
+        public ActionResult GetPhotoThumb(string Id)
+        {
+            var photo = _photoManager.GetPhoto(Id);
+            if(photo != null)
+            {
+                var thumbPath = photo.GetPhotoUrl("minithumb");
+                return Json(new {id = Id, path = thumbPath}, JsonRequestBehavior.AllowGet);
+            }
+            
+            return Json(null, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetGalleryThumbs(string Id)
+        {
+            var gallery = _galleryManager.GetById(Id);
+            if (gallery != null && gallery.Photos != null && gallery.Photos.Count > 0)
+            {
+                var retColl = gallery.Photos.Select(photo => new {Id = photo.Id.ToString(), Order = photo.Order, Path = photo.GetPhotoUrl("minithumb")}).ToList();
+                return Json(retColl, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(null, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpGet]
         public ActionResult DeleteGallery(string Id)
         {
@@ -295,6 +398,13 @@ namespace GalerieKusVola.Web.Controllers
             {
                 _galleryManager.Delete(galerie);
             }
+
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult ClearTrash()
+        {
+            _galleryManager.ClearTrashGallery(CurrentUser);
 
             return RedirectToAction("Index");
         }

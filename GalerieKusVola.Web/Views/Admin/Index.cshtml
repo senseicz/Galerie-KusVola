@@ -12,6 +12,9 @@
     @Html.Action("GalleryLeaf", "GalleryLeaf", new { area = "Partials", leafId = rootGallery.Id })
 }
 
+<li>Koš [počet fotek: @Model.Trash.PhotosCount]</li> <a href="/admin/ClearTrash">vymazat koš</a>
+<br />
+
 <a href="/Admin/GalleryEdit">nová galerie</a>
 
 <hr />

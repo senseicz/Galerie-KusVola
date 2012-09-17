@@ -7,6 +7,7 @@ namespace GalerieKusVola.Web.Controllers
     public class BaseController : Controller
     {
         protected readonly UserManager _userManager;
+        private User _selectedUser;
         
         public BaseController()
         {
@@ -62,6 +63,25 @@ namespace GalerieKusVola.Web.Controllers
                 }
 
                 return "";
+            }
+        }
+
+        public User SelectedUser
+        {
+            get
+            {
+                var selectedUserName = RouteData.Values["username"].ToString();
+
+                if(!string.IsNullOrEmpty(selectedUserName))
+                {
+                    if(_selectedUser == null)
+                    {
+                        _selectedUser = _userManager.GetBySeoName(selectedUserName);    
+                    }
+
+                    return _selectedUser;
+                }
+                return null;
             }
         }
 

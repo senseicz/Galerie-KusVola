@@ -1,89 +1,65 @@
 ﻿body {
     font-size: .85em;
-    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
-    color: #232323;
-    background-color: #fff;
+    font-family: 'Ubuntu', sans-serif;
+    color: #000;
+    background-color: #808080;
 }
 
 header, footer, nav, section {
     display: block;
 }
 
+.cleaner { clear: both;}
 
-/* Styles for basic forms
------------------------------------------------------------*/
-fieldset {
-    border: 1px solid #ddd;
-    padding: 0 1.4em 1.4em 1.4em;
-    margin: 0 0 1.5em 0;
+.h { visibility: hidden;}
+
+.mainPhoto {
+    border: 10px solid #FFFFFF;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 60px;
+    width: 1000px;
+    min-height: 667px;
+    position: relative;
 }
 
-legend {
-    font-size: 1.2em;
-    font-weight: bold;
+.mainPhotoHeader {
+    background-color: #fff;
+    height: 45px;
+    text-align: right;
+    padding: 10px 20px;
+    font-size: 2.4em;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    -moz-opacity: 0.66;
+    opacity: 0.66;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=66);
 }
 
-textarea {
-    min-height: 75px;
+.galleryName {
+    text-align: right;
+    padding: 10px 30px;
+    font-size: 2.4em;
+    margin-top: 20px; 
+    text-transform: uppercase;
+    background-color: #fff;
+    -moz-opacity: 0.66;
+    opacity: 0.66;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=66);
+    width: 300px;
+    float: right;
 }
 
-.editor-label {
-    margin: 1em 0 0 0;
+.mainPhotoUserEmail {
+    background-color: #fff;
+    height: 25px;
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 1.4em;
+    position: absolute;
+    bottom: 20px;
+    -moz-opacity: 0.55;
+    opacity: 0.55;
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha"(Opacity=55);
 }
 
-.editor-field {
-    margin: 0.5em 0 0 0;
-}
-
-
-/* Styles for validation helpers
------------------------------------------------------------*/
-.field-validation-error {
-    color: #f00;
-}
-
-.field-validation-valid {
-    display: none;
-}
-
-.input-validation-error {
-    border: 1px solid #f00;
-    background-color: #fee;
-}
-
-.validation-summary-errors {
-    font-weight: bold;
-    color: #f00;
-}
-
-.validation-summary-valid {
-    display: none;
-}
-
-
-
-/*Admin*/
-.two-cols {margin: 10px 0 15px 0; line-height: 1.55em;}
-.two-cols .col1 {float: left; width: 680px; padding-right: 20px; position: relative;}
-.two-cols .col2 {float: left; width: 320px; padding-right: 0; position: relative; margin-right: 0;}
-.cleaner {clear: both;}
-
-#photos { float: left; min-height: 12em; } * html #photos { height: 12em; } /* IE6 */
-.photos.custom-state-active { background: #eee; }
-.photos li { float: left; padding: 0.4em; margin: 0 0.4em 0.4em 0; text-align: center; }
-.photos li a { float: right; }
-.photos li a.ui-icon-zoomin { float: left; }
-/*.photos li img { width: 100%; cursor: move; }*/
-
-#trash { float: right; width: 32%; min-height: 18em; padding: 1%;} * html #trash { height: 18em; } /* IE6 */
-#trash h4 { line-height: 16px; margin: 0 0 0.4em; }
-#trash h4 .ui-icon { float: left; }
-#trash .gallery h5 { display: none; }
-
-
-#photos .ui-selecting { background: #FECA40; }
-#photos .ui-selected { background: #F39814; color: white; }
-
-.container-w800{ border: 1px solid #000;padding: 5px;}
-
-.fc18 {clear: both; display: block; float: none; font-size: 18px; height: 18px; line-height: 0; margin: 0; overflow: hidden; padding: 0;}
